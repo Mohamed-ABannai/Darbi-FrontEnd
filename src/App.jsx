@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Navigate, Route, Routes } from "react-router";
 import Navbar from "./components/Navbar";
 import SignupPage from "./pages/SignupPage";
@@ -8,12 +8,17 @@ import Dashboard from "./pages/Dashboard";
 import { logout } from "./services/authService";
 
 function App() {
-  function  getUserFromToken (){
+  function getUserFromToken() {
     const token = localStorage.getItem("token");
 
     if (!token) return null;
 
-    return JSON.parse(atob(token.split(".")[1]));
+    try {
+      return JSON.parse(atob(token.split(".")[1]));
+    } catch {
+      localStorage.removeItem("token");
+      return null;
+    }
   };
 
 

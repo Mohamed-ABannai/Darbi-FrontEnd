@@ -9,10 +9,15 @@ function Signup() {
     username: "",
     password: "",
     passwordConf: "",
+    role:'',
+    hourlyrate:1,
+    dateOfBirth:"",
+    document:'',
+    email:''
   });
   const [ submitting, setSubmitting ] = useState(false)
 
-  const { username, password, passwordConf } = formData;
+  const { username, password, passwordConf,role,hourlyrate,dateOfBirth,document,email} = formData;
 
   function handleChange(event){
     setError("");
@@ -53,6 +58,39 @@ function Signup() {
             required
           />
         </div>
+        <div>
+          <label htmlFor="email">Email:</label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            name="email"
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+          <div>
+            <label htmlFor="role">Role Selected:</label>
+            <select name="role" id="role" onChange={handleChange} value={role} required>
+              <option value="learner">Learner</option>
+              <option value="instructor">Instructor</option>
+            </select>
+          </div>
+        <div>
+
+          <label htmlFor="dateOfBirth">Date Of Birthday:</label>
+           <input type="date"
+           id="dateOfBirth"
+           name="dateOfBirth"
+          onChange={handleChange}
+          value={dateOfBirth}
+          required
+           /> 
+
+
+        </div>
+
         <div>
           <label htmlFor="password">Password:</label>
           <input
