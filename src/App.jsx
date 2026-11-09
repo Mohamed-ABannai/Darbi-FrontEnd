@@ -6,8 +6,13 @@ import Homepage from "./pages/Homepage";
 import SignInPage from "./pages/SigninPage";
 import Dashboard from "./pages/Dashboard";
 import { logout } from "./services/authService";
+<<<<<<< HEAD
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 
+=======
+import FindInstructors from "./pages/learner/FindInstructors";
+import InstructorDetails from "./pages/learner/InstructorDetails";
+>>>>>>> 8622a44a961d771ab8cc8a5574ffccd7cc49576b
 
 function App() {
   function getUserFromToken() {
@@ -21,8 +26,7 @@ function App() {
       localStorage.removeItem("token");
       return null;
     }
-  };
-
+  }
 
   const [user, setUser] = useState(getUserFromToken());
 
@@ -38,9 +42,22 @@ function App() {
         <Route path="/" element={<Homepage />} />
         <Route path="/sign-up" element={<SignupPage />} />
         <Route path="/sign-in" element={<SignInPage setUser={setUser} />} />
+        <Route path="/find-instructors" element={<FindInstructors />} />
         <Route
           path="/dashboard"
-          element={user ? <Dashboard user={user} /> : <Navigate to="/sign-in" />}
+          element={
+            user ? <Dashboard user={user} /> : <Navigate to="/sign-in" />
+          }
+        />
+        <Route
+          path="/instructors/:id"
+          element={
+            user ? (
+              <InstructorDetails user={user} />
+            ) : (
+              <Navigate to="/sign-in" />
+            )
+          }
         />
         <Route
           path="/instructor/dashboard"
