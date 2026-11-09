@@ -73,6 +73,7 @@ function Signup() {
           <div>
             <label htmlFor="role">Role Selected:</label>
             <select name="role" id="role" onChange={handleChange} value={role} required>
+              <option value="">--------Select</option>
               <option value="learner">Learner</option>
               <option value="instructor">Instructor</option>
             </select>
