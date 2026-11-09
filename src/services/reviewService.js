@@ -20,4 +20,3 @@ export async function deleteReviewById(id) {
     const response = await api.delete(`/reviews/${id}`);
     return response.data;
 }
-

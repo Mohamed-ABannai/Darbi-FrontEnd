@@ -6,6 +6,8 @@ import Homepage from "./pages/Homepage";
 import SignInPage from "./pages/SigninPage";
 import Dashboard from "./pages/Dashboard";
 import { logout } from "./services/authService";
+import InstructorDashboard from "./pages/instructor/InstructorDashboard";
+
 
 function App() {
   function getUserFromToken() {
@@ -39,6 +41,10 @@ function App() {
         <Route
           path="/dashboard"
           element={user ? <Dashboard user={user} /> : <Navigate to="/sign-in" />}
+        />
+        <Route
+          path="/instructor/dashboard"
+          element={user ? <InstructorDashboard user={user} /> : <Navigate to="/sign-in" />}
         />
       </Routes>
     </div>
