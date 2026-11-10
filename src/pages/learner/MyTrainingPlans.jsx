@@ -1,41 +1,41 @@
 import { useEffect, useState } from "react";
 import { getTrainingPlans } from "../../services/trainingPlanService";
 
-function MyLearners() {
-  const [learners, setLearners] = useState([]);
+function MyTrainingPlans() {
+  const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function fetchActiveLearners() {
+    async function fetchActivePlans() {
       try {
         setLoading(true);
         const data = await getTrainingPlans();
         const activePlans = data.filter((plan) => plan.status === "active");
-        setLearners(activePlans);
+        setPlans(activePlans);
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to load active learners.");
+        setError(err.response?.data?.message || "Failed to load active training plans.");
       } finally {
         setLoading(false);
       }
     }
 
-    fetchActiveLearners();
+    fetchActivePlans();
   }, []);
 
-  if (loading) return <div>Loading active learners...</div>;
+  if (loading) return <div>Loading active training plans...</div>;
 
   return (
     <div>
-      <h1>My Active Learners</h1>
+      <h1>My Active Training Plans</h1>
 
       {error && <div>{error}</div>}
 
-      {learners.length === 0 ? (
-        <p>No active learners found.</p>
+      {plans.length === 0 ? (
+        <p>No active training plans found.</p>
       ) : (
         <div>
-          {learners.map((plan) => (
+          {plans.map((plan) => (
             <div key={plan._id}>
               <div>
                 <p><strong>Name:</strong> {plan.learner?.username || plan.learner?.name || "Learner"}</p>
@@ -51,4 +51,4 @@ function MyLearners() {
   );
 }
 
-export default MyLearners;
+export default MyTrainingPlans;
