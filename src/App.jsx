@@ -8,7 +8,6 @@ import Dashboard from "./pages/Dashboard";
 import { logout } from "./services/authService";
 import FindInstructors from "./pages/learner/FindInstructors";
 import InstructorDetails from "./pages/learner/InstructorDetails";
-
 function App() {
   function getUserFromToken() {
     const token = localStorage.getItem("token");
