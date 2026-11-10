@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import { logout } from "./services/authService";
 import FindInstructors from "./pages/learner/FindInstructors";
 import InstructorDetails from "./pages/learner/InstructorDetails";
+import LearnerDrivingTests from "./pages/learner/LearnerDrivingTests";
 function App() {
   function getUserFromToken() {
     const token = localStorage.getItem("token");
@@ -52,8 +53,18 @@ function App() {
               <Navigate to="/sign-in" />
             )
           }
-        />
+        />{" "}
       </Routes>
+      <Route
+        path="/driving-tests"
+        element={
+          user ? (
+            <LearnerDrivingTests user={user} />
+          ) : (
+            <Navigate to="/sign-in" />
+          )
+        }
+      />
     </div>
   );
 }
