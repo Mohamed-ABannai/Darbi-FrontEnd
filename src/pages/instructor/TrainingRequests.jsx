@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+mport { useEffect, useState } from "react";
 import { getTrainingPlans, updateTrainingPlan } from "../../services/trainingPlanService";
 
 function TrainingRequests() {

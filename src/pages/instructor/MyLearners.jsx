@@ -11,7 +11,6 @@ function MyLearners() {
       try {
         setLoading(true);
         const data = await getTrainingPlans();
-      
         const activePlans = data.filter((plan) => plan.status === "active");
         setLearners(activePlans);
       } catch (err) {
