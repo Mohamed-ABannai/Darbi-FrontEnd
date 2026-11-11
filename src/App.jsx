@@ -54,8 +54,8 @@ function App() {
             )
           }
         />{" "}
-      </Routes>
-      <Route
+
+        <Route
         path="/driving-tests"
         element={
           user ? (
@@ -65,6 +65,9 @@ function App() {
           )
         }
       />
+      
+      </Routes>
+      
     </div>
   );
 }
