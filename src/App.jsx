@@ -9,6 +9,7 @@ import { logout } from "./services/authService";
 import FindInstructors from "./pages/learner/FindInstructors";
 import InstructorDetails from "./pages/learner/InstructorDetails";
 import LearnerDrivingTests from "./pages/learner/LearnerDrivingTests";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 function App() {
   function getUserFromToken() {
     const token = localStorage.getItem("token");
@@ -30,6 +31,8 @@ function App() {
     setUser(null);
   }
 
+  const isAdmin = user?.role === "admin" || user?.role === "superAdmin";
+
   return (
     <div>
       <Navbar user={user} handleLogout={handleLogout} />
@@ -41,8 +44,12 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            user ? <Dashboard user={user} /> : <Navigate to="/sign-in" />
+            user ? (isAdmin ? <Navigate to="/admin-dashboard" replace /> : <Dashboard user={user} />) : <Navigate to="/sign-in" />
           }
+        />
+        <Route
+          path="/admin-dashboard"
+          element={isAdmin ? <AdminDashboard user={user} /> : <Navigate to="/dashboard" replace />}
         />
         <Route
           path="/instructors/:id"
