@@ -15,16 +15,39 @@ export async function createTrainingPlan(planData) {
   return response.data;
 }
 
-export async function cancelTrainingPlan(id, reason) {
+export async function acceptTrainingPlan(id) {
   const response = await api.put(`/training-plans/${id}`, {
-    status: "cancelled",
-    reason,
+    status: "active"
   });
   return response.data;
 }
+
+export async function rejectTrainingPlan(id, reason) {
+  const response = await api.put(`/training-plans/${id}`, {
+    status: "rejected",
+    reason
+  });
+  return response.data;
+}
+
+export async function cancelTrainingPlan(id, reason) {
+  const response = await api.put(`/training-plans/${id}`, {
+    status: "cancelled",
+    reason
+  });
+  return response.data;
+}
+
 export async function transferInstructor(id, instructorId) {
   const response = await api.put(`/training-plans/${id}`, {
-    instructor: instructorId,
+    instructor: instructorId
+  });
+  return response.data;
+}
+
+export async function updateWeeklySchedule(id, weeklySchedule) {
+  const response = await api.put(`/training-plans/${id}`, {
+    weeklySchedule
   });
   return response.data;
 }
