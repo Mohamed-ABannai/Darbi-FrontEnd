@@ -1,23 +1,36 @@
 import api from "./api";
 
 export async function getAllReviews(instructorId) {
-        const response = await api.get("/reviews", {
-            params: instructorId ? { instructor: instructorId } : undefined,
-        });
-        return response.data;
-    }
+  const response = await api.get("/reviews");
+
+  if (instructorId) {
+    const instructorReviews = response.data.filter((review) =>
+      review.TrainingPlan &&
+      review.TrainingPlan.instructor == instructorId
+    );
+
+    return instructorReviews;
+  }
+
+  return response.data;
+}
+
+export async function getReviewById(id) {
+  const response = await api.get(`/reviews/${id}`);
+  return response.data;
+}
 
 export async function createNewReview(newReview) {
-    const response = await api.post("/reviews", newReview);
-    return response.data;
+  const response = await api.post("/reviews", newReview);
+  return response.data;
 }
 
 export async function updateReviewById(id, updatedReview) {
-    const response = await api.put(`/reviews/${id}`, updatedReview);
-    return response.data;
-}
-export async function deleteReviewById(id) {
-    const response = await api.delete(`/reviews/${id}`);
-    return response.data;
+  const response = await api.put(`/reviews/${id}`, updatedReview);
+  return response.data;
 }
 
+export async function deleteReviewById(id) {
+  const response = await api.delete(`/reviews/${id}`);
+  return response.data;
+}
