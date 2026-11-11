@@ -54,17 +54,17 @@ function App() {
             )
           }
         />{" "}
+        <Route
+          path="/driving-tests"
+          element={
+            user ? (
+              <LearnerDrivingTests user={user} />
+            ) : (
+              <Navigate to="/sign-in" />
+            )
+          }
+        />
       </Routes>
-      <Route
-        path="/driving-tests"
-        element={
-          user ? (
-            <LearnerDrivingTests user={user} />
-          ) : (
-            <Navigate to="/sign-in" />
-          )
-        }
-      />
     </div>
   );
 }
