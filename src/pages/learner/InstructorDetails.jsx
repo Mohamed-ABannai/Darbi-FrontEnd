@@ -10,7 +10,11 @@ function InstructorDetails() {
 
   const [instructor, setInstructor] = useState(null);
   const [reviews, setReviews] = useState([]);
-  const [weeklySchedule, setWeeklySchedule] = useState("");
+  const [schedule, setSchedule] = useState({
+    day: "Sunday",
+    startTime: "09:00",
+    endTime: "11:00",
+  });
   const [error, setError] = useState("");
 
   async function loadData() {
@@ -29,12 +33,16 @@ function InstructorDetails() {
     loadData();
   }, [id]);
 
+  function handleScheduleChange(e) {
+    setSchedule({ ...schedule, [e.target.name]: e.target.value });
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     try {
       await createTrainingPlan({
         instructor: id,
-        weeklySchedule: weeklySchedule,
+        weeklySchedule: [schedule],
       });
       navigate("/my-plans");
     } catch (err) {
@@ -51,7 +59,9 @@ function InstructorDetails() {
           <h1>{instructor.username}</h1>
           <p>Rate: ${instructor.hourlyRate} / hour</p>
           {instructor.availability && (
-            <p>Available from: {new Date(instructor.availability).toLocaleDateString()}</p>
+            <p>
+              Available from: {new Date(instructor.availability).toLocaleDateString()}
+            </p>
           )}
         </div>
       )}
@@ -62,15 +72,47 @@ function InstructorDetails() {
         <h2>Request Training Plan</h2>
         {error && <p className="error">{error}</p>}
         <form onSubmit={handleSubmit}>
-          <label htmlFor="weeklySchedule">Choose Start Date & Time:</label>
-          <input
-            type="datetime-local"
-            id="weeklySchedule"
-            name="weeklySchedule"
-            value={weeklySchedule}
-            onChange={(e) => setWeeklySchedule(e.target.value)}
-            required
-          />
+          <div>
+            <label htmlFor="day">Preferred Day:</label>
+            <select
+              id="day"
+              name="day"
+              value={schedule.day}
+              onChange={handleScheduleChange}
+            >
+              <option value="Sunday">Sunday</option>
+              <option value="Monday">Monday</option>
+              <option value="Tuesday">Tuesday</option>
+              <option value="Wednesday">Wednesday</option>
+              <option value="Thursday">Thursday</option>
+              <option value="Saturday">Saturday</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="startTime">Start Time:</label>
+            <input
+              type="time"
+              id="startTime"
+              name="startTime"
+              value={schedule.startTime}
+              onChange={handleScheduleChange}
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="endTime">End Time:</label>
+            <input
+              type="time"
+              id="endTime"
+              name="endTime"
+              value={schedule.endTime}
+              onChange={handleScheduleChange}
+              required
+            />
+          </div>
+
           <button type="submit">Send Request</button>
         </form>
       </div>
