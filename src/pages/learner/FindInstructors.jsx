@@ -15,7 +15,7 @@ function FindInstructors() {
   }
 
   useEffect(() => {
-    loadInstructors();
+    loadInstructors(); 
   }, []);
 
   return (
