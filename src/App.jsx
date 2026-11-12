@@ -10,6 +10,7 @@ import FindInstructors from "./pages/learner/FindInstructors";
 import InstructorDetails from "./pages/learner/InstructorDetails";
 import LearnerDrivingTests from "./pages/learner/LearnerDrivingTests";
 import MyTrainingPlans from "./pages/learner/MyTrainingPlans";
+import LearnerReviews from "./pages/learner/LearnerReviews";
 
 function App() {
   function getUserFromToken() {
@@ -70,6 +71,12 @@ function App() {
           path="/my-plans"
           element={
             user ? <MyTrainingPlans user={user} /> : <Navigate to="/sign-in" />
+          }
+        />
+        <Route
+          path="/reviews"
+          element={
+            user ? <LearnerReviews user={user} /> : <Navigate to="/sign-in" />
           }
         />
       </Routes>
