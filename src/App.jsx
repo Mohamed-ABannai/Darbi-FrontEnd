@@ -9,6 +9,8 @@ import { logout } from "./services/authService";
 import FindInstructors from "./pages/learner/FindInstructors";
 import InstructorDetails from "./pages/learner/InstructorDetails";
 import LearnerDrivingTests from "./pages/learner/LearnerDrivingTests";
+import MyTrainingPlans from "./pages/learner/MyTrainingPlans";
+
 function App() {
   function getUserFromToken() {
     const token = localStorage.getItem("token");
@@ -54,20 +56,23 @@ function App() {
             )
           }
         />{" "}
-
         <Route
-        path="/driving-tests"
-        element={
-          user ? (
-            <LearnerDrivingTests user={user} />
-          ) : (
-            <Navigate to="/sign-in" />
-          )
-        }
-      />
-      
+          path="/driving-tests"
+          element={
+            user ? (
+              <LearnerDrivingTests user={user} />
+            ) : (
+              <Navigate to="/sign-in" />
+            )
+          }
+        />
+        <Route
+          path="/my-plans"
+          element={
+            user ? <MyTrainingPlans user={user} /> : <Navigate to="/sign-in" />
+          }
+        />
       </Routes>
-      
     </div>
   );
 }
