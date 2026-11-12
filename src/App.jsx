@@ -11,6 +11,7 @@ import InstructorDetails from "./pages/learner/InstructorDetails";
 import LearnerDrivingTests from "./pages/learner/LearnerDrivingTests";
 import MyTrainingPlans from "./pages/learner/MyTrainingPlans";
 import LearnerReviews from "./pages/learner/LearnerReviews";
+import LearnerPayments from "./pages/learner/LearnerPayments";
 
 function App() {
   function getUserFromToken() {
@@ -77,6 +78,12 @@ function App() {
           path="/reviews"
           element={
             user ? <LearnerReviews user={user} /> : <Navigate to="/sign-in" />
+          }
+        />
+        <Route
+          path="/payments"
+          element={
+            user ? <LearnerPayments user={user} /> : <Navigate to="/sign-in" />
           }
         />
       </Routes>
