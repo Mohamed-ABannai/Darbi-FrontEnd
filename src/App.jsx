@@ -18,6 +18,7 @@ import InstructorApprovals from "./pages/admin/InstructorApprovals";
 import ManageTraining from "./pages/admin/ManageTraining";
 import ManageReviews from "./pages/admin/ManageReviews";
 import ManageDrivingTests from "./pages/admin/ManageDrivingTests";
+import ManageAdmins from "./pages/admin/ManageAdmins";
 
 function App() {
   function getUserFromToken() {
@@ -53,7 +54,7 @@ function App() {
           element={
             user ? (
               user.role === "admin" || user.role === "superAdmin"
-                ? <AdminDashboard />
+                ? <AdminDashboard user={user} />
                 : <Dashboard user={user} />
             ) : (
               <Navigate to="/sign-in" />
@@ -100,6 +101,15 @@ function App() {
           element={
             user && (user.role === "admin" || user.role === "superAdmin")
               ? <ManageDrivingTests />
+              : <Navigate to="/dashboard" />
+          }
+        />
+
+        <Route
+          path="/admin/manage-admins"
+          element={
+            user && user.role === "superAdmin"
+              ? <ManageAdmins />
               : <Navigate to="/dashboard" />
           }
         />
