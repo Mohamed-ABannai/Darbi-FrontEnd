@@ -64,6 +64,16 @@ function App() {
               : <Navigate to="/dashboard" />
           }
         />
+
+        <Route
+          path="/admin/instructor-approvals"
+          element={
+            user && (user.role === "admin" || user.role === "superAdmin")
+              ? <InstructorApprovals />
+              : <Navigate to="/dashboard" />
+          }
+        />
+
         <Route
           path="/instructors/:id"
           element={
