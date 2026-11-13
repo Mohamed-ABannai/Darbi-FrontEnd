@@ -16,6 +16,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManageUsers from "./pages/admin/ManageUsers";
 import InstructorApprovals from "./pages/admin/InstructorApprovals";
 import ManageTraining from "./pages/admin/ManageTraining";
+import ManageReviews from "./pages/admin/ManageReviews";
 import ManageDrivingTests from "./pages/admin/ManageDrivingTests";
 
 function App() {
@@ -87,6 +88,10 @@ function App() {
         />
 
         <Route
+          path="/admin/reviews"
+          element={
+            user && (user.role === "admin" || user.role === "superAdmin")
+              ? <ManageReviews />
           path="/admin/driving-tests"
           element={
             user && (user.role === "admin" || user.role === "superAdmin")
@@ -104,7 +109,7 @@ function App() {
               <Navigate to="/sign-in" />
             )
           }
-        />{" "}
+        />
         <Route
           path="/driving-tests"
           element={
