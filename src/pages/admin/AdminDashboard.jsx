@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { getUsers } from "../services/userService";
-import { getTrainingPlans } from "../services/trainingPlanService";
-import { getDrivingTests } from "../services/drivingTestService";
-import { getPayments } from "../services/paymentService";
+import { getUsers } from "../../services/userService";
+import { getTrainingPlans } from "../../services/trainingPlanService";
+import { getDrivingTests } from "../../services/drivingTestService";
+import { getPayments } from "../../services/paymentService";
 
 function AdminDashboard() {
   const [users, setUsers] = useState([]);

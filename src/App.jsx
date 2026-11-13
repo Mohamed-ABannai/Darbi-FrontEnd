@@ -12,7 +12,8 @@ import LearnerDrivingTests from "./pages/learner/LearnerDrivingTests";
 import MyTrainingPlans from "./pages/learner/MyTrainingPlans";
 import LearnerReviews from "./pages/learner/LearnerReviews";
 import LearnerPayments from "./pages/learner/LearnerPayments";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+
 
 function App() {
   function getUserFromToken() {
