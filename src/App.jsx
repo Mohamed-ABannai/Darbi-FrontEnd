@@ -13,7 +13,7 @@ import MyTrainingPlans from "./pages/learner/MyTrainingPlans";
 import LearnerReviews from "./pages/learner/LearnerReviews";
 import LearnerPayments from "./pages/learner/LearnerPayments";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-
+import ManageUsers from "./pages/admin/ManageUsers";
 
 function App() {
   function getUserFromToken() {
@@ -54,6 +54,14 @@ function App() {
             ) : (
               <Navigate to="/sign-in" />
             )
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            user && (user.role === "admin" || user.role === "superAdmin")
+              ? <ManageUsers />
+              : <Navigate to="/dashboard" />
           }
         />
         <Route
