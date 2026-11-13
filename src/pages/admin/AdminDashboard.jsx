@@ -5,7 +5,7 @@ import { getTrainingPlans } from "../../services/trainingPlanService";
 import { getDrivingTests } from "../../services/drivingTestService";
 import { getPayments } from "../../services/paymentService";
 
-function AdminDashboard() {
+function AdminDashboard({ user }) {
   const [users, setUsers] = useState([]);
   const [trainingPlans, setTrainingPlans] = useState([]);
   const [drivingTests, setDrivingTests] = useState([]);
@@ -54,6 +54,9 @@ function AdminDashboard() {
       <h2>Management</h2>
       <div>
         <p><Link to="/admin/users">Manage Users</Link></p>
+        {user?.role === "superAdmin" && (
+        <p><Link to="/admin/manage-admins">Manage Admins</Link></p>
+         )}
         <p><Link to="/admin/instructor-approvals">Instructor Approvals</Link></p>
         <p><Link to="/admin/training">Manage Training</Link></p>
         <p><Link to="/admin/driving-tests">Manage Driving Tests</Link></p>
