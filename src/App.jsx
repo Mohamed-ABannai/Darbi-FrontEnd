@@ -14,6 +14,7 @@ import LearnerReviews from "./pages/learner/LearnerReviews";
 import LearnerPayments from "./pages/learner/LearnerPayments";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManageUsers from "./pages/admin/ManageUsers";
+import InstructorApprovals from "./pages/admin/InstructorApprovals";
 
 function App() {
   function getUserFromToken() {
