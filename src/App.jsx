@@ -92,6 +92,10 @@ function App() {
           element={
             user && (user.role === "admin" || user.role === "superAdmin")
               ? <ManageReviews />
+              : <Navigate to="/dashboard" />
+          }
+        />
+        <Route
           path="/admin/driving-tests"
           element={
             user && (user.role === "admin" || user.role === "superAdmin")
