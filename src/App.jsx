@@ -24,6 +24,7 @@ import TrainingRequests from "./pages/instructor/TrainingRequests";
 import MyLearners from "./pages/instructor/MyLearners";
 import InstructorLessons from "./pages/instructor/InstructorLessons";
 import InstructorPayments from "./pages/instructor/InstructorPayments";
+import ExaminerDashboard from "./pages/examiner/ExaminerDashboard";
 
 function App() {
   function getUserFromToken() {
@@ -57,15 +58,11 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            user ? (
-              user.role === "admin" || user.role === "superAdmin" ? (
-                <AdminDashboard user={user} />
-              ) : (
-                <Dashboard user={user} />
-              )
-            ) : (
-              <Navigate to="/sign-in" />
-            )
+            !user ? <Navigate to="/sign-in" /> :
+              user.role === "admin" || user.role === "superAdmin" ? <AdminDashboard user={user} /> :
+                user.role === "instructor" ? <InstructorDashboard user={user} /> :
+                  user.role === "examiner" ? <ExaminerDashboard user={user} /> :
+                    <Dashboard user={user} />
           }
         />
         <Route
