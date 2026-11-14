@@ -22,6 +22,7 @@ import ManageAdmins from "./pages/admin/ManageAdmins";
 import LearnerLessons from "./pages/learner/LearnerLessons";
 import TrainingRequests from "./pages/instructor/TrainingRequests";
 import MyLearners from "./pages/instructor/MyLearners";
+import InstructorLessons from "./pages/instructor/InstructorLessons";
 
 function App() {
   function getUserFromToken() {
@@ -157,6 +158,15 @@ function App() {
           element={
             user && user.role === "instructor"
               ? <MyLearners />
+              : <Navigate to="/dashboard" />
+          }
+        />
+
+        <Route
+          path="/instructor/lessons"
+          element={
+            user && user.role === "instructor"
+              ? <InstructorLessons />
               : <Navigate to="/dashboard" />
           }
         />
