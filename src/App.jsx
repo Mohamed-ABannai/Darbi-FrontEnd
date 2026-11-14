@@ -23,6 +23,7 @@ import LearnerLessons from "./pages/learner/LearnerLessons";
 import TrainingRequests from "./pages/instructor/TrainingRequests";
 import MyLearners from "./pages/instructor/MyLearners";
 import InstructorLessons from "./pages/instructor/InstructorLessons";
+import InstructorPayments from "./pages/instructor/InstructorPayments";
 
 function App() {
   function getUserFromToken() {
@@ -167,6 +168,15 @@ function App() {
           element={
             user && user.role === "instructor"
               ? <InstructorLessons />
+              : <Navigate to="/dashboard" />
+          }
+        />
+
+        <Route
+          path="/instructor/payments"
+          element={
+            user && user.role === "instructor"
+              ? <InstructorPayments />
               : <Navigate to="/dashboard" />
           }
         />
