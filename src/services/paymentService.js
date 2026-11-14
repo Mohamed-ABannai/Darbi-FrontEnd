@@ -15,14 +15,14 @@ export async function updatePayment(id, updateData) {
   return response.data;
 }
 
-export async function downloadInvoicePdf(invoiceId) {
-  const response = await api.get(`/invoices/${invoiceId}/pdf`, {
+export async function downloadInvoicePdf(paymentId) {
+  const response = await api.get(`/invoices/${paymentId}/pdf`, {
     responseType: "blob"
   });
   const url = URL.createObjectURL(response.data);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `invoice-${invoiceId}.pdf`;
+  link.download = `invoice-${paymentId}.pdf`;
   link.click();
   URL.revokeObjectURL(url);
 }
