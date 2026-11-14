@@ -26,6 +26,7 @@ import InstructorLessons from "./pages/instructor/InstructorLessons";
 import InstructorPayments from "./pages/instructor/InstructorPayments";
 import ExaminerDashboard from "./pages/examiner/ExaminerDashboard";
 import Profile from "./pages/shared/Profile";
+import AssignedTests from "./pages/examiner/AssignedTests";
 
 function App() {
   function getUserFromToken() {
@@ -125,6 +126,17 @@ function App() {
           element={
             user && user.role === "superAdmin" ? (
               <ManageAdmins />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
+          }
+        />
+
+        <Route
+          path="/examiner/assigned-tests"
+          element={
+            user?.role === "examiner" ? (
+              <AssignedTests />
             ) : (
               <Navigate to="/dashboard" />
             )

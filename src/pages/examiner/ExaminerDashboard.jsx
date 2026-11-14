@@ -42,7 +42,8 @@ function ExaminerDashboard({ user }) {
       <p>Passed Tests: {passedTests.length}</p>
       <p>Failed Tests: {failedTests.length}</p>
       <h2>Assigned Driving Tests</h2>
-      <p><Link to="/examiner/tests">View Assigned Tests</Link></p>
+      <p><Link to="/examiner/assigned-tests">Assigned Tests</Link></p>
+      
       {tests.length === 0 ? (
         <p>No assigned driving tests found.</p>
       ) : (
