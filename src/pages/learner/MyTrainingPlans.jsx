@@ -1,200 +1,142 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router";
 import {
   getTrainingPlans,
-  cancelTrainingPlan,
-  transferInstructor,
+  cancelTrainingPlan
 } from "../../services/trainingPlanService";
-import { getInstructors } from "../../services/userService";
 
 function MyTrainingPlans() {
   const [plans, setPlans] = useState([]);
-  const [instructors, setInstructors] = useState([]);
-  const [cancelReason, setCancelReason] = useState("");
   const [cancellingPlanId, setCancellingPlanId] = useState(null);
-  const [transferringPlanId, setTransferringPlanId] = useState(null);
-  const [newInstructorId, setNewInstructorId] = useState("");
+  const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  async function loadData() {
+  async function getData() {
     try {
-      const plansData = await getTrainingPlans();
-      if (plansData) setPlans(plansData);
-
-      const instructorsData = await getInstructors();
-      if (instructorsData) setInstructors(instructorsData);
+      const response = await getTrainingPlans();
+      setPlans(response);
     } catch (err) {
-      console.error("Error fetching training plans:", err);
+      setError("Failed to load training plans");
     }
   }
 
   useEffect(() => {
-    loadData();
+    getData();
   }, []);
 
-  async function handleCancelSubmit(event) {
-    event.preventDefault();
+  async function handleCancel(id) {
     setError("");
     setMessage("");
 
-    try {
-      await cancelTrainingPlan(cancellingPlanId, cancelReason);
-      setCancellingPlanId(null);
-      setCancelReason("");
-      setMessage("Training plan cancelled successfully.");
-      loadData();
-    } catch (err) {
-      setError(
-        err?.response?.data?.message ||
-          "Failed to cancel plan. Reason must be between 20 and 140 characters.",
-      );
+    if (!reason.trim()) {
+      setError("Please enter a cancellation reason");
+      return;
     }
-  }
-
-  async function handleTransferSubmit(event) {
-    event.preventDefault();
-    setError("");
-    setMessage("");
 
     try {
-      await transferInstructor(transferringPlanId, newInstructorId);
-      setTransferringPlanId(null);
-      setNewInstructorId("");
-      setMessage("Instructor transfer request submitted successfully.");
-      loadData();
+      await cancelTrainingPlan(id, reason.trim());
+      setMessage("Training plan cancelled successfully");
+      setCancellingPlanId(null);
+      setReason("");
+      await getData();
     } catch (err) {
-      setError(
-        err?.response?.data?.message || "Failed to transfer instructor.",
-      );
+      setError(err.response?.data?.message || "Failed to cancel training plan");
     }
   }
 
   return (
-    <div className="my-training-plans-page">
+    <div>
       <h1>My Training Plans</h1>
-      <p>View your training requests, check status, and manage instructors.</p>
+      <p>View and manage your driving training plans.</p>
 
-      {error && <p className="error">{error}</p>}
-      {message && <p className="success">{message}</p>}
+      {error && <p>{error}</p>}
+      {message && <p>{message}</p>}
 
       {plans.length === 0 ? (
-        <div className="empty-state">
-          <p>You have not requested any training plans yet.</p>
-          <Link to="/find-instructors">Find an Instructor</Link>
-        </div>
+        <p>You have no training plans yet.</p>
       ) : (
-        <div className="plans-list">
-          {plans.map((onePlan) => (
-            <div key={onePlan._id} className="plan-card">
-              <h3>Instructor: {onePlan.instructor?.username || "Unknown"}</h3>
+        <div>
+          {plans.map((plan) => (
+            <div key={plan._id}>
+              <h2>Training Plan</h2>
+
               <p>
-                <b>Hourly Rate:</b> ${onePlan.instructor?.hourlyRate} / hour
-              </p>
-              <p>
-                <b>Status:</b> {onePlan.status}
+                <b>Instructor:</b>{" "}
+                {plan.instructor?.username || "Not assigned"}
               </p>
 
-              {onePlan.weeklySchedule && onePlan.weeklySchedule.length > 0 && (
-                <div className="plan-schedule">
-                  <b>Weekly Schedule:</b>
-                  <ul>
-                    {onePlan.weeklySchedule.map((slot, index) => (
-                      <li key={index}>
-                        {slot.day}: {slot.startTime} - {slot.endTime}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              <p>
+                <b>Hourly Rate:</b>{" "}
+                {plan.instructor?.hourlyRate || "N/A"} BHD
+              </p>
 
-              {onePlan.reason && (
+              <p>
+                <b>Status:</b> {plan.status}
+              </p>
+
+              {plan.reason && (
                 <p>
-                  <b>Reason / Note:</b> {onePlan.reason}
+                  <b>Reason:</b> {plan.reason}
                 </p>
               )}
 
-              <div className="plan-actions">
-                {(onePlan.status === "pending" ||
-                  onePlan.status === "active") && (
-                  <button
-                    onClick={() => {
-                      setCancellingPlanId(onePlan._id);
-                      setTransferringPlanId(null);
-                      setError("");
-                    }}
-                  >
-                    Cancel Plan
-                  </button>
-                )}
+              <h3>Weekly Schedule</h3>
 
-                {onePlan.status === "active" && (
-                  <button
-                    onClick={() => {
-                      setTransferringPlanId(onePlan._id);
-                      setCancellingPlanId(null);
-                      setError("");
-                    }}
-                  >
-                    Change Instructor
-                  </button>
-                )}
-              </div>
-
-              {cancellingPlanId === onePlan._id && (
-                <form onSubmit={handleCancelSubmit} className="cancel-form">
-                  <h4>Cancel Training Plan</h4>
-                  <label htmlFor="cancelReason">
-                    Reason (20 - 140 characters):
-                  </label>
-                  <input
-                    type="text"
-                    id="cancelReason"
-                    value={cancelReason}
-                    onChange={(e) => setCancelReason(e.target.value)}
-                    placeholder="Write your cancellation reason..."
-                    minLength={20}
-                    maxLength={140}
-                    required
-                  />
-                  <button type="submit">Confirm Cancel</button>
-                  <button
-                    type="button"
-                    onClick={() => setCancellingPlanId(null)}
-                  >
-                    Close
-                  </button>
-                </form>
+              {!plan.weeklySchedule || plan.weeklySchedule.length === 0 ? (
+                <p>No weekly schedule available.</p>
+              ) : (
+                <ul>
+                  {plan.weeklySchedule.map((day, index) => (
+                    <li key={index}>
+                      {day.day}: {day.start} - {day.end}
+                    </li>
+                  ))}
+                </ul>
               )}
 
-              {transferringPlanId === onePlan._id && (
-                <form onSubmit={handleTransferSubmit} className="transfer-form">
-                  <h4>Transfer to Another Instructor</h4>
-                  <label htmlFor="newInstructor">Select New Instructor:</label>
-                  <select
-                    id="newInstructor"
-                    value={newInstructorId}
-                    onChange={(e) => setNewInstructorId(e.target.value)}
-                    required
-                  >
-                    <option value="">-- Choose Instructor --</option>
-                    {instructors
-                      .filter((inst) => inst._id !== onePlan.instructor?._id)
-                      .map((inst) => (
-                        <option key={inst._id} value={inst._id}>
-                          {inst.username} (${inst.hourlyRate}/hr)
-                        </option>
-                      ))}
-                  </select>
-                  <button type="submit">Submit Transfer</button>
-                  <button
-                    type="button"
-                    onClick={() => setTransferringPlanId(null)}
-                  >
-                    Close
-                  </button>
-                </form>
+              {(plan.status === "pending" || plan.status === "active") && (
+                <div>
+                  {cancellingPlanId === plan._id ? (
+                    <div>
+                      <label htmlFor={`reason-${plan._id}`}>
+                        Cancellation Reason
+                      </label>
+                      <input
+                        id={`reason-${plan._id}`}
+                        type="text"
+                        value={reason}
+                        onChange={(event) => setReason(event.target.value)}
+                      />
+
+                      <button onClick={() => handleCancel(plan._id)}>
+                        Confirm Cancellation
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setCancellingPlanId(null);
+                          setReason("");
+                          setError("");
+                        }}
+                      >
+                        Back
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setCancellingPlanId(plan._id);
+                        setReason("");
+                        setError("");
+                      }}
+                    >
+                      Cancel Training Plan
+                    </button>
+                  )}
+                </div>
               )}
+
+              <hr />
             </div>
           ))}
         </div>
