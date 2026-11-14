@@ -167,14 +167,14 @@ function App() {
             user ? <LearnerPayments user={user} /> : <Navigate to="/sign-in" />
           }
         />
-      </Routes>
 
-      <Route
-        path="/lessons"
-        element={
-          user ? <LearnerLessons user={user} /> : <Navigate to="/sign-in" />
-        }
-      />
+        <Route
+          path="/lessons"
+          element={
+            user ? <LearnerLessons user={user} /> : <Navigate to="/sign-in" />
+          }
+        />
+      </Routes>
     </div>
   );
 }
