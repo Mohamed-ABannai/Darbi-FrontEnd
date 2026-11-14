@@ -20,9 +20,10 @@ export async function updateLesson(id, lessonData) {
   return response.data;
 }
 
-export async function completeLesson(id) {
+export async function completeLesson(id, hours) {
   const response = await api.put(`/lessons/${id}`, {
-    status: "completed"
+    status: "completed",
+    hours
   });
   return response.data;
 }
