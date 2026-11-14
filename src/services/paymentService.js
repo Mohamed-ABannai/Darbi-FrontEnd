@@ -19,16 +19,10 @@ export async function downloadInvoicePdf(invoiceId) {
   const response = await api.get(`/invoices/${invoiceId}/pdf`, {
     responseType: "blob"
   });
-
-  const url = window.URL.createObjectURL(response.data);
-
+  const url = URL.createObjectURL(response.data);
   const link = document.createElement("a");
   link.href = url;
   link.download = `invoice-${invoiceId}.pdf`;
-
-  document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
-
-  window.URL.revokeObjectURL(url);
+  URL.revokeObjectURL(url);
 }
