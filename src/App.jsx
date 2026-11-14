@@ -19,6 +19,7 @@ import ManageTraining from "./pages/admin/ManageTraining";
 import ManageReviews from "./pages/admin/ManageReviews";
 import ManageDrivingTests from "./pages/admin/ManageDrivingTests";
 import ManageAdmins from "./pages/admin/ManageAdmins";
+import LearnerLessons from "./pages/learner/LearnerLessons";
 
 function App() {
   function getUserFromToken() {
@@ -53,9 +54,11 @@ function App() {
           path="/dashboard"
           element={
             user ? (
-              user.role === "admin" || user.role === "superAdmin"
-                ? <AdminDashboard user={user} />
-                : <Dashboard user={user} />
+              user.role === "admin" || user.role === "superAdmin" ? (
+                <AdminDashboard user={user} />
+              ) : (
+                <Dashboard user={user} />
+              )
             ) : (
               <Navigate to="/sign-in" />
             )
@@ -64,53 +67,65 @@ function App() {
         <Route
           path="/admin/users"
           element={
-            user && (user.role === "admin" || user.role === "superAdmin")
-              ? <ManageUsers />
-              : <Navigate to="/dashboard" />
+            user && (user.role === "admin" || user.role === "superAdmin") ? (
+              <ManageUsers />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
           }
         />
 
         <Route
           path="/admin/instructor-approvals"
           element={
-            user && (user.role === "admin" || user.role === "superAdmin")
-              ? <InstructorApprovals />
-              : <Navigate to="/dashboard" />
+            user && (user.role === "admin" || user.role === "superAdmin") ? (
+              <InstructorApprovals />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
           }
         />
 
         <Route
           path="/admin/training"
           element={
-            user && (user.role === "admin" || user.role === "superAdmin")
-              ? <ManageTraining />
-              : <Navigate to="/dashboard" />
+            user && (user.role === "admin" || user.role === "superAdmin") ? (
+              <ManageTraining />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
           }
         />
 
         <Route
           path="/admin/reviews"
           element={
-            user && (user.role === "admin" || user.role === "superAdmin")
-              ? <ManageReviews />
-              : <Navigate to="/dashboard" />
+            user && (user.role === "admin" || user.role === "superAdmin") ? (
+              <ManageReviews />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
           }
         />
         <Route
           path="/admin/driving-tests"
           element={
-            user && (user.role === "admin" || user.role === "superAdmin")
-              ? <ManageDrivingTests />
-              : <Navigate to="/dashboard" />
+            user && (user.role === "admin" || user.role === "superAdmin") ? (
+              <ManageDrivingTests />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
           }
         />
 
         <Route
           path="/admin/manage-admins"
           element={
-            user && user.role === "superAdmin"
-              ? <ManageAdmins />
-              : <Navigate to="/dashboard" />
+            user && user.role === "superAdmin" ? (
+              <ManageAdmins />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
           }
         />
 
@@ -153,6 +168,13 @@ function App() {
           }
         />
       </Routes>
+
+      <Route
+        path="/lessons"
+        element={
+          user ? <LearnerLessons user={user} /> : <Navigate to="/sign-in" />
+        }
+      />
     </div>
   );
 }
