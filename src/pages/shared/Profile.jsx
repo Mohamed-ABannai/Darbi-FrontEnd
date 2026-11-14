@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getUserById, updateProfile } from "../services/userService";
+import { getUserById, updateProfile } from "../../services/userService";
 
 function Profile({ user }) {
   const [formData, setFormData] = useState({
