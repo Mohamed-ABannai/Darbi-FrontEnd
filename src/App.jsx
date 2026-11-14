@@ -163,6 +163,17 @@ function App() {
           }
         />
 
+        <Route
+          path="/learner/my-training-plans"
+          element={
+            user?.role === "learner" ? (
+              <MyTrainingPlans />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
+          }
+        />
+
 
         <Route
           path="/instructor/learners"
