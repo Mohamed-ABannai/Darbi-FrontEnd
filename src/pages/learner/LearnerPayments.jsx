@@ -257,10 +257,8 @@ function LearnerPayments() {
                   </button>
                 )}
 
-                {onePayment.status === "completed" && onePayment.invoice && (
-                  <button
-                    onClick={() => handleDownloadInvoice(onePayment.invoice._id)}
-                  >
+                {onePayment.status === "completed" && (
+                  <button onClick={() => handleDownloadInvoice(onePayment._id)}>
                     Download Invoice PDF
                   </button>
                 )}

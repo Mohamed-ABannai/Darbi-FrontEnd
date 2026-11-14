@@ -6,7 +6,7 @@ export async function getAllReviews(instructorId) {
   if (instructorId) {
     const instructorReviews = response.data.filter((review) =>
       review.TrainingPlan &&
-      review.TrainingPlan.instructor == instructorId
+      review.TrainingPlan.instructor?.toString() === instructorId.toString()
     );
 
     return instructorReviews;
