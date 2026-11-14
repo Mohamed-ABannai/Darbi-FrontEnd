@@ -21,6 +21,7 @@ import ManageDrivingTests from "./pages/admin/ManageDrivingTests";
 import ManageAdmins from "./pages/admin/ManageAdmins";
 import LearnerLessons from "./pages/learner/LearnerLessons";
 import TrainingRequests from "./pages/instructor/TrainingRequests";
+import MyLearners from "./pages/instructor/MyLearners";
 
 function App() {
   function getUserFromToken() {
@@ -146,6 +147,16 @@ function App() {
           element={
             user && user.role === "instructor"
               ? <TrainingRequests />
+              : <Navigate to="/dashboard" />
+          }
+        />
+
+
+        <Route
+          path="/instructor/learners"
+          element={
+            user && user.role === "instructor"
+              ? <MyLearners />
               : <Navigate to="/dashboard" />
           }
         />
