@@ -25,6 +25,7 @@ import MyLearners from "./pages/instructor/MyLearners";
 import InstructorLessons from "./pages/instructor/InstructorLessons";
 import InstructorPayments from "./pages/instructor/InstructorPayments";
 import ExaminerDashboard from "./pages/examiner/ExaminerDashboard";
+import Profile from "./pages/shared/Profile";
 
 function App() {
   function getUserFromToken() {
@@ -213,6 +214,12 @@ function App() {
             user ? <LearnerLessons user={user} /> : <Navigate to="/sign-in" />
           }
         />
+
+        <Route
+          path="/profile"
+          element={user ? <Profile user={user} /> : <Navigate to="/sign-in" />}
+        />
+
       </Routes>
     </div>
   );
