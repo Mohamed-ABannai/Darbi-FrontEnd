@@ -7,16 +7,20 @@ function MyLearners() {
   const [lessons, setLessons] = useState([]);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    let active = true;
-    Promise.all([getTrainingPlans(), getLessons()]).then(([plansResponse, lessonsResponse]) => {
-      if (!active) return;
+  async function loadLearners() {
+    try {
+      const plansResponse = await getTrainingPlans();
+      const lessonsResponse = await getLessons();
       setPlans(plansResponse.filter((plan) => plan.status === "active"));
       setLessons(lessonsResponse);
-    }).catch(() => {
-      if (active) setError("Failed to load learners");
-    });
-    return () => { active = false; };
+    } catch {
+      setError("Failed to load learners");
+    }
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(loadLearners, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   return (

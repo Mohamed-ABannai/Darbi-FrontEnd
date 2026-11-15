@@ -7,16 +7,20 @@ function ExaminerDashboard({ user }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
+  async function loadTests() {
+    try {
+      const response = await getDrivingTests();
+      setTests(response);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to load driving tests");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    let active = true;
-    getDrivingTests().then((response) => {
-      if (active) setTests(response);
-    }).catch((err) => {
-      if (active) setError(err.response?.data?.message || "Failed to load driving tests");
-    }).finally(() => {
-      if (active) setLoading(false);
-    });
-    return () => { active = false; };
+    const timer = window.setTimeout(loadTests, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const pendingTests = tests.filter((test) => test.status === "pending");

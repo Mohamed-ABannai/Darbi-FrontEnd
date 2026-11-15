@@ -7,16 +7,20 @@ function ManageTraining() {
   const [lessons, setLessons] = useState([]);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    let active = true;
-    Promise.all([getTrainingPlans(), getLessons()]).then(([plans, lessons]) => {
-      if (!active) return;
+  async function loadTrainingData() {
+    try {
+      const plans = await getTrainingPlans();
+      const lessonData = await getLessons();
       setTrainingPlans(plans);
-      setLessons(lessons);
-    }).catch(() => {
-      if (active) setError("Failed to load training data");
-    });
-    return () => { active = false; };
+      setLessons(lessonData);
+    } catch {
+      setError("Failed to load training data");
+    }
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(loadTrainingData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   return (

@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import {
-  getTrainingPlans,
-  cancelTrainingPlan
+  getTrainingPlans
 } from "../../services/trainingPlanService";
 import { getLessons } from "../../services/lessonService";
 import { getPayments } from "../../services/paymentService";
@@ -12,8 +11,6 @@ import { cancelLesson } from "../../services/lessonService";
 function MyTrainingPlans() {
   const [plans, setPlans] = useState([]);
   const [plansLoaded, setPlansLoaded] = useState(false);
-  const [cancellingPlanId, setCancellingPlanId] = useState(null);
-  const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [lessons, setLessons] = useState([]);
@@ -27,19 +24,38 @@ function MyTrainingPlans() {
       const planData = await getTrainingPlans();
       setPlans(planData);
       setPlansLoaded(true);
-      const [lessonResult, paymentResult] = await Promise.allSettled([getLessons(), getPayments()]);
-      if (lessonResult.status === "fulfilled") setLessons(lessonResult.value || []);
-      if (paymentResult.status === "fulfilled") setPayments(paymentResult.value || []);
-      if (lessonResult.status === "rejected" || paymentResult.status === "rejected") {
+      let lessonDetailsLoaded = true;
+      let paymentDetailsLoaded = true;
+      try {
+        const lessonData = await getLessons();
+        setLessons(lessonData || []);
+      } catch {
+        lessonDetailsLoaded = false;
+      }
+      try {
+        const paymentData = await getPayments();
+        setPayments(paymentData || []);
+      } catch {
+        paymentDetailsLoaded = false;
+      }
+      if (!lessonDetailsLoaded || !paymentDetailsLoaded) {
         setError("Training plans loaded, but some lesson or payment details could not be loaded.");
       }
-      const photoEntries = await Promise.all(planData.map(async (plan) => {
+      const photos = {};
+      for (const plan of planData) {
         const instructorId = plan.instructor?._id;
-        if (!instructorId) return [plan._id, ""];
-        try { return [plan._id, URL.createObjectURL(await getProfileImage(instructorId))]; }
-        catch { return [plan._id, ""]; }
-      }));
-      setInstructorPhotos(Object.fromEntries(photoEntries));
+        if (!instructorId) {
+          photos[plan._id] = "";
+          continue;
+        }
+        try {
+          const image = await getProfileImage(instructorId);
+          photos[plan._id] = URL.createObjectURL(image);
+        } catch {
+          photos[plan._id] = "";
+        }
+      }
+      setInstructorPhotos(photos);
     } catch {
       setError("Failed to load training plans");
       setPlansLoaded(true);
@@ -47,60 +63,46 @@ function MyTrainingPlans() {
   }
 
   useEffect(() => {
-    let active = true;
-    getTrainingPlans().then(async (planData) => {
-      if (!active) return;
-      setPlans(planData);
-      setPlansLoaded(true);
-      const [lessonResult, paymentResult] = await Promise.allSettled([getLessons(), getPayments()]);
-      if (lessonResult.status === "fulfilled") setLessons(lessonResult.value || []);
-      if (paymentResult.status === "fulfilled") setPayments(paymentResult.value || []);
-      if (lessonResult.status === "rejected" || paymentResult.status === "rejected") {
-        setError("Training plans loaded, but some lesson or payment details could not be loaded.");
-      }
-      const photoEntries = await Promise.all(planData.map(async (plan) => {
-        const instructorId = plan.instructor?._id;
-        if (!instructorId) return [plan._id, ""];
-        try { return [plan._id, URL.createObjectURL(await getProfileImage(instructorId))]; }
-        catch { return [plan._id, ""]; }
-      }));
-      if (active) setInstructorPhotos(Object.fromEntries(photoEntries));
-    }).catch(() => {
-      if (active) {
-        setError("Failed to load training plans");
-        setPlansLoaded(true);
-      }
-    });
-    return () => { active = false; };
+    const timer = window.setTimeout(getData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
-  async function handleCancel(id) {
-    setError("");
-    setMessage("");
+  useEffect(() => {
+    return () => {
+      Object.values(instructorPhotos).forEach((photoUrl) => {
+        if (photoUrl) URL.revokeObjectURL(photoUrl);
+      });
+    };
+  }, [instructorPhotos]);
 
-    if (!reason.trim()) {
+  function beginLessonCancellation(id) {
+    if (!window.confirm("Cancel this lesson only? The training plan and other lessons will stay active.")) return;
+    setError("");
+    setCancellingLessonId(id);
+    setLessonReason("");
+  }
+
+  function closeLessonCancellation() {
+    setCancellingLessonId(null);
+    setLessonReason("");
+  }
+
+  async function handleCancelLesson(id) {
+    if (!lessonReason.trim()) {
       setError("Please enter a cancellation reason");
       return;
     }
 
-    try {
-      await cancelTrainingPlan(id, reason.trim());
-      setMessage("Training plan cancelled successfully");
-      setCancellingPlanId(null);
-      setReason("");
-      await getData();
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to cancel training plan");
-    }
-  }
-
-  async function handleCancelLesson(id) {
-    if (!lessonReason.trim()) { setError("Please enter a cancellation reason"); return; }
+    setError("");
+    setMessage("");
     try {
       await cancelLesson(id, lessonReason.trim());
-      setCancellingLessonId(null); setLessonReason(""); setMessage("Lesson cancelled; the rest of the plan remains active.");
+      closeLessonCancellation();
+      setMessage("Lesson cancelled; the rest of the plan remains active.");
       await getData();
-    } catch (err) { setError(err.response?.data?.message || "Failed to cancel lesson"); }
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to cancel lesson");
+    }
   }
 
   return (
@@ -114,15 +116,15 @@ function MyTrainingPlans() {
         <div className="empty-state"><h2>Your plan starts here</h2><p>You have no training plans yet. Find an instructor to request your first plan.</p><Link className="button-link" to="/find-instructors">Find instructors</Link></div>
       ) : plans.length > 0 ? (
         <div>
-          {plans.map((plan) => (
-            <div key={plan._id} className="training-plan-card">
-              {(() => {
-                const planLessons = lessons.filter((lesson) => String(lesson.TrainingPlan?._id || lesson.TrainingPlan) === String(plan._id));
-                const completed = planLessons.filter((lesson) => lesson.status === "completed");
-                const completedHours = completed.reduce((total, lesson) => total + Number(lesson.hours || 0), 0);
-                const upcoming = planLessons.filter((lesson) => lesson.status === "scheduled" && new Date(lesson.date) >= new Date()).sort((a, b) => new Date(a.date) - new Date(b.date))[0];
-                const planPayments = payments.filter((payment) => planLessons.some((lesson) => String(lesson._id) === String(payment.lesson?._id || payment.lesson)));
-                return <>
+          {plans.map((plan) => {
+            const planLessons = lessons.filter((lesson) => String(lesson.TrainingPlan?._id || lesson.TrainingPlan) === String(plan._id));
+            const completed = planLessons.filter((lesson) => lesson.status === "completed");
+            const completedHours = completed.reduce((total, lesson) => total + Number(lesson.hours || 0), 0);
+            const upcoming = planLessons.filter((lesson) => lesson.status === "scheduled" && new Date(lesson.date) >= new Date()).sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+            const planPayments = payments.filter((payment) => planLessons.some((lesson) => String(lesson._id) === String(payment.lesson?._id || payment.lesson)));
+
+            return (
+              <div key={plan._id} className="training-plan-card">
               <div className="record-heading"><div className="identity-inline">{instructorPhotos[plan._id] ? <img className="sidebar-avatar-image" src={instructorPhotos[plan._id]} alt="" /> : <span className="profile-initial" aria-hidden="true">{(plan.instructor?.username || "I").charAt(0).toUpperCase()}</span>}<div><span className="section-kicker">Training plan</span><h2>{plan.instructor?.username || "Instructor to be assigned"}</h2></div></div><span className={`status-chip status-${plan.status}`}>{plan.status}</span></div>
 
               <p>
@@ -162,64 +164,20 @@ function MyTrainingPlans() {
               <h3>Individual lessons</h3>
               {planLessons.length ? <ul>{planLessons.slice().sort((a,b) => new Date(a.date)-new Date(b.date)).map((lesson) => <li key={lesson._id}>
                 {new Date(lesson.date).toLocaleString("en-BH", { timeZone: "Asia/Bahrain" })} · {lesson.hours} hours · <span className={`status-chip status-${lesson.status}`}>{lesson.status}</span>
-                {lesson.status === "scheduled" && plan.status === "active" && (cancellingLessonId === lesson._id ? <span>
+                {["pending", "scheduled"].includes(lesson.status) && plan.status === "active" && (cancellingLessonId === lesson._id ? <span>
                   <input aria-label="Cancellation reason" maxLength={140} value={lessonReason} onChange={(event) => setLessonReason(event.target.value)} placeholder="Cancellation reason" />
                   <button className="button-danger" onClick={() => handleCancelLesson(lesson._id)}>Confirm lesson cancellation</button>
-                  <button onClick={() => { setCancellingLessonId(null); setLessonReason(""); }}>Back</button>
-                </span> : <button onClick={() => { if (window.confirm("Cancel this lesson only?")) { setCancellingLessonId(lesson._id); setLessonReason(""); } }}>Cancel lesson</button>)}
+                  <button onClick={closeLessonCancellation}>Back</button>
+                </span> : <button onClick={() => beginLessonCancellation(lesson._id)}>Cancel lesson</button>)}
                 {lesson.cancellationReason && <small> · {lesson.cancellationReason}</small>}
               </li>)}</ul> : <p>No lessons scheduled yet.</p>}
 
               {plan.status === "rejected" && <p>Find another approved instructor to submit a new training request.</p>}
               {(plan.status === "active" || plan.status === "completed") && <div className="plan-actions"><Link to="/lessons">View lessons</Link><Link to="/payments">View payments</Link></div>}
 
-              {(plan.status === "pending" || plan.status === "active") && (
-                <div>
-                  {cancellingPlanId === plan._id ? (
-                    <div>
-                      <label htmlFor={`reason-${plan._id}`}>
-                        Cancellation Reason
-                      </label>
-                      <input
-                        id={`reason-${plan._id}`}
-                        type="text"
-                        maxLength={140}
-                        value={reason}
-                        onChange={(event) => setReason(event.target.value)}
-                      />
-
-                      <button className="button-danger" onClick={() => handleCancel(plan._id)}>
-                        Confirm Cancellation
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setCancellingPlanId(null);
-                          setReason("");
-                          setError("");
-                        }}
-                      >
-                        Back
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setCancellingPlanId(plan._id);
-                        setReason("");
-                        setError("");
-                      }}
-                    >
-                      Cancel Training Plan
-                    </button>
-                  )}
-                </div>
-              )}
-
-                </>;
-              })()}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       ) : null}
     </div>

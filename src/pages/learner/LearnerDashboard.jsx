@@ -10,19 +10,29 @@ function LearnerDashboard({ user }) {
   const [payments, setPayments] = useState([]);
   const [tests, setTests] = useState([]);
   const [plans, setPlans] = useState([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let active = true;
-    Promise.all([getLessons(), getPayments(), getDrivingTests(), getTrainingPlans()]).then(([lessonsData, paymentsData, testsData, plansData]) => {
-      if (!active) return;
+  async function loadDashboard() {
+    try {
+      const lessonsData = await getLessons();
+      const paymentsData = await getPayments();
+      const testsData = await getDrivingTests();
+      const plansData = await getTrainingPlans();
       setLessons(lessonsData || []);
       setPayments(paymentsData || []);
       setTests(testsData || []);
       setPlans(plansData || []);
-    }).catch((error) => {
-      console.error("Error loading dashboard data:", error);
-    });
-    return () => { active = false; };
+    } catch {
+      setError("Could not load your dashboard. Please refresh the page.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(loadDashboard, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const completedHours = lessons
@@ -39,12 +49,15 @@ function LearnerDashboard({ user }) {
   const latestTest = [...tests].sort((a,b) => new Date(b.date || 0)-new Date(a.date || 0))[0] || null;
 
   const activePlan = plans.find((p) => p.status === "active");
+  if (loading) return <p>Loading dashboard…</p>;
+
   return (
     <div className="learner-dashboard-page">
       <div className="dashboard-header page-heading">
         <span className="section-kicker">Your learner space</span><h1>Good to see you, {user.username}</h1>
         <p>Every lesson is a step closer to feeling at home behind the wheel.</p>
       </div>
+      {error && <p className="error" role="alert">{error}</p>}
 
       <div className="stats-grid">
         <div className="stat-card progress-stat">

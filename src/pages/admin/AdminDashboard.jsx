@@ -12,22 +12,24 @@ function AdminDashboard({ user }) {
   const [payments, setPayments] = useState([]);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function getData() {
-      try {
-        const usersData = await getUsers();
-        const plansData = await getTrainingPlans();
-        const testsData = await getDrivingTests();
-        const paymentsData = await getPayments();
-        setUsers(usersData);
-        setTrainingPlans(plansData);
-        setDrivingTests(testsData);
-        setPayments(paymentsData);
-      } catch {
-        setError("Failed to load dashboard");
-      }
+  async function loadDashboard() {
+    try {
+      const usersData = await getUsers();
+      const plansData = await getTrainingPlans();
+      const testsData = await getDrivingTests();
+      const paymentsData = await getPayments();
+      setUsers(usersData);
+      setTrainingPlans(plansData);
+      setDrivingTests(testsData);
+      setPayments(paymentsData);
+    } catch {
+      setError("Failed to load dashboard");
     }
-    getData();
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(loadDashboard, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const learners = users.filter((user) => user.role === "learner");

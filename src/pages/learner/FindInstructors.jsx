@@ -12,17 +12,20 @@ function FindInstructors() {
     (instructor.username || "").toLowerCase().includes(search.trim().toLowerCase())
   );
 
+  async function loadInstructors() {
+    try {
+      const response = await getInstructors();
+      setInstructors(response);
+    } catch {
+      setError("We couldn't load instructors right now. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    let active = true;
-    getInstructors().then((response) => {
-      if (active) setInstructors(response);
-    }).catch((error) => {
-      console.error("Error fetching instructors:", error);
-      if (active) setError("We couldn't load instructors right now. Please try again.");
-    }).finally(() => {
-      if (active) setLoading(false);
-    });
-    return () => { active = false; };
+    const timer = window.setTimeout(loadInstructors, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   return (

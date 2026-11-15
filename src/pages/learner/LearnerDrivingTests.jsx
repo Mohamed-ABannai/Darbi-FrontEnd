@@ -18,30 +18,29 @@ function LearnerDrivingTests() {
   const [message, setMessage] = useState("");
   const [cancellingTestId, setCancellingTestId] = useState(null);
   const [eligibility, setEligibility] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   async function loadTests() {
     try {
       const data = await getDrivingTests();
+      const eligibilityData = await getDrivingTestEligibility();
       setTests(data);
+      setEligibility(eligibilityData);
     } catch (err) {
-      console.error("Error fetching driving tests:", err);
+      setError(err.response?.data?.message || "Could not load driving test information.");
     }
   }
 
   useEffect(() => {
-    let active = true;
-    Promise.all([getDrivingTests(), getDrivingTestEligibility()]).then(([data, eligibilityData]) => {
-      if (active) { setTests(data); setEligibility(eligibilityData); }
-    }).catch((error) => {
-      console.error("Error fetching driving tests:", error);
-    });
-    return () => { active = false; };
+    const timer = window.setTimeout(loadTests, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
     setMessage("");
+    setSubmitting(true);
 
     try {
       const requestedDate = new Date(date);
@@ -52,9 +51,11 @@ function LearnerDrivingTests() {
       await createDrivingTest({ date: requestedDate.toISOString() });
       setDate("");
       setMessage("Driving test requested successfully!");
-      loadTests();
+      await loadTests();
     } catch (err) {
       setError(err?.response?.data?.message || "Failed to request driving test.");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -95,7 +96,7 @@ function LearnerDrivingTests() {
             onChange={(e) => setDate(e.target.value)}
             required
           />
-          <button type="submit" disabled={!eligibility?.eligible}>Submit Request</button>
+          <button type="submit" disabled={!eligibility?.eligible || submitting}>{submitting ? "Submitting…" : "Submit Request"}</button>
         </form>
       </div>
 
@@ -124,7 +125,8 @@ function LearnerDrivingTests() {
                   </p>
                 )}
 
-                {oneTest.status === "pending" && (
+                {oneTest.examiner?.username && <p><b>Assigned examiner:</b> {oneTest.examiner.username}</p>}
+                {["pending", "scheduled"].includes(oneTest.status) && (
                   <button onClick={() => handleCancel(oneTest._id)} disabled={cancellingTestId === oneTest._id}>
                     {cancellingTestId === oneTest._id ? "Cancelling…" : "Cancel Test"}
                   </button>

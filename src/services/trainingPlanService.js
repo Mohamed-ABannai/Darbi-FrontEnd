@@ -30,14 +30,6 @@ export async function rejectTrainingPlan(id, reason) {
   return response.data;
 }
 
-export async function cancelTrainingPlan(id, reason) {
-  const response = await api.put(`/training-plans/${id}`, {
-    status: "cancelled",
-    reason
-  });
-  return response.data;
-}
-
 export async function transferInstructor(id, instructorId) {
   const response = await api.put(`/training-plans/${id}`, {
     instructor: instructorId
@@ -49,10 +41,5 @@ export async function updateWeeklySchedule(id, weeklySchedule) {
   const response = await api.put(`/training-plans/${id}`, {
     weeklySchedule
   });
-  return response.data;
-}
-
-export async function schedulePlanLessons(id) {
-  const response = await api.post(`/training-plans/${id}/schedule`);
   return response.data;
 }

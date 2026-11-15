@@ -24,13 +24,8 @@ function ManageAdmins() {
   }
 
   useEffect(() => {
-    let active = true;
-    getUsers().then((response) => {
-      if (active) setAdmins(response.filter((user) => user.role === "admin"));
-    }).catch(() => {
-      if (active) setError("Failed to load admins");
-    });
-    return () => { active = false; };
+    const timer = window.setTimeout(getData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   function handleChange(event) {
@@ -51,7 +46,7 @@ function ManageAdmins() {
         dateOfBirth: "",
         password: ""
       });
-      getData();
+      await getData();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create admin");
     }
@@ -63,7 +58,7 @@ function ManageAdmins() {
     try {
       await updateUserStatus(admin._id, { isActive: !admin.isActive });
       setMessage("Admin status updated successfully");
-      getData();
+      await getData();
     } catch {
       setError("Failed to update admin status");
     }

@@ -82,10 +82,11 @@ function Sidebar({ user, handleLogout, isOpen, onClose }) {
       }
     }
 
-    loadProfileImage();
+    const timer = window.setTimeout(loadProfileImage, 0);
     window.addEventListener("darbi:profile-image-updated", loadProfileImage);
     return () => {
       active = false;
+      window.clearTimeout(timer);
       window.removeEventListener("darbi:profile-image-updated", loadProfileImage);
       if (imageUrl) URL.revokeObjectURL(imageUrl);
     };

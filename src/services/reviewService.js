@@ -2,16 +2,6 @@ import api from "./api";
 
 export async function getAllReviews(instructorId) {
   const response = await api.get("/reviews", { params: instructorId ? { instructor: instructorId } : undefined });
-
-  if (instructorId) {
-    const instructorReviews = response.data.filter((review) =>
-      review.TrainingPlan &&
-      review.TrainingPlan.instructor?.toString() === instructorId.toString()
-    );
-
-    return instructorReviews;
-  }
-
   return response.data;
 }
 

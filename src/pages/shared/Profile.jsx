@@ -16,52 +16,39 @@ function Profile({ user }) {
   const [photoPreview, setPhotoPreview] = useState("");
   const [saving, setSaving] = useState(false);
 
-  async function getData() {
-    try {
-      const response = await getUserById(user._id);
-      setFormData({
-        phone: response.phone || "",
-        email: response.email || "",
-        dateOfBirth: response.dateOfBirth ? response.dateOfBirth.slice(0, 10) : "",
-        hourlyRate: response.hourlyRate || "",
-        availability: response.availability ? response.availability.slice(0, 10) : ""
-      });
+  useEffect(() => {
+    async function loadProfile() {
       try {
-        const image = await getProfileImage(user._id);
-        setPhotoPreview(URL.createObjectURL(image));
+        const response = await getUserById(user._id);
+        setFormData({
+          phone: response.phone || "",
+          email: response.email || "",
+          dateOfBirth: response.dateOfBirth ? response.dateOfBirth.slice(0, 10) : "",
+          hourlyRate: response.hourlyRate || "",
+          availability: response.availability ? response.availability.slice(0, 10) : ""
+        });
+        try {
+          const image = await getProfileImage(user._id);
+          setPhotoPreview(URL.createObjectURL(image));
+        } catch {
+          setPhotoPreview("");
+        }
       } catch {
-        // A profile image is optional; keep the initials avatar when none is stored.
+        setError("Failed to load profile");
+      } finally {
+        setLoading(false);
       }
-    } catch {
-      setError("Failed to load profile");
     }
-    setLoading(false);
-  }
+
+    const timer = window.setTimeout(loadProfile, 0);
+    return () => window.clearTimeout(timer);
+  }, [user._id]);
 
   useEffect(() => {
-    let active = true;
-    getUserById(user._id).then(async (response) => {
-      if (!active) return;
-      setFormData({
-        phone: response.phone || "",
-        email: response.email || "",
-        dateOfBirth: response.dateOfBirth ? response.dateOfBirth.slice(0, 10) : "",
-        hourlyRate: response.hourlyRate || "",
-        availability: response.availability ? response.availability.slice(0, 10) : ""
-      });
-      try {
-        const image = await getProfileImage(user._id);
-        if (active) setPhotoPreview(URL.createObjectURL(image));
-      } catch {
-        if (active) setPhotoPreview("");
-      }
-    }).catch(() => {
-      if (active) setError("Failed to load profile");
-    }).finally(() => {
-      if (active) setLoading(false);
-    });
-    return () => { active = false; };
-  }, [user._id]);
+    return () => {
+      if (photoPreview) URL.revokeObjectURL(photoPreview);
+    };
+  }, [photoPreview]);
 
   function handleChange(event) {
     setFormData({
@@ -109,7 +96,6 @@ function Profile({ user }) {
       const response = await updateProfile(user._id, data);
       setMessage(response.message || "Profile updated successfully");
       if (profileImage) window.dispatchEvent(new Event("darbi:profile-image-updated"));
-      getData();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update profile");
     } finally {

@@ -16,9 +16,8 @@ function AssignedTests() {
   }
 
   useEffect(() => {
-    let active = true;
-    getDrivingTests().then((response) => { if (active) setTests(response); }).catch(() => { if (active) setError("Failed to load assigned tests"); });
-    return () => { active = false; };
+    const timer = window.setTimeout(getData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   async function handleResult(id, result) {
@@ -27,7 +26,7 @@ function AssignedTests() {
     try {
       await submitDrivingTestResult(id, result);
       setMessage("Test result submitted successfully");
-      getData();
+      await getData();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to submit result");
     }

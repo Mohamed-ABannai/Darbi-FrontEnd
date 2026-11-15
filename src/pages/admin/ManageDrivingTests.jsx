@@ -29,15 +29,8 @@ function ManageDrivingTests() {
   }
 
   useEffect(() => {
-    let active = true;
-    Promise.all([getDrivingTests(), getUsers()]).then(([testsResponse, usersResponse]) => {
-      if (!active) return;
-      setDrivingTests(testsResponse);
-      setExaminers(usersResponse.filter((user) => user.role === "examiner" && user.isActive));
-    }).catch(() => {
-      if (active) setError("Failed to load driving tests");
-    });
-    return () => { active = false; };
+    const timer = window.setTimeout(getData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   function handleChange(event) {

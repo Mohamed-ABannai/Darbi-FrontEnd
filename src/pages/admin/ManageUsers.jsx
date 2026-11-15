@@ -7,21 +7,24 @@ function ManageUsers() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
 
+  async function loadUsers() {
+    try {
+      const response = await getUsers();
+      setUsers(response);
+    } catch {
+      setError("Failed to load users");
+    }
+  }
+
   useEffect(() => {
-    let active = true;
-    getUsers().then((response) => {
-      if (active) setUsers(response);
-    }).catch(() => {
-      if (active) setError("Failed to load users");
-    });
-    return () => { active = false; };
+    const timer = window.setTimeout(loadUsers, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   async function handleStatus(user) {
     try {
       await updateUserStatus(user._id, { isActive: !user.isActive });
-      const response = await getUsers();
-      setUsers(response);
+      await loadUsers();
     } catch {
       setError("Failed to update user status");
     }

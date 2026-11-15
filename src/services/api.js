@@ -26,7 +26,7 @@ api.interceptors.response.use(
       window.dispatchEvent(new Event("darbi:auth-expired"));
     }
 
-    return Promise.reject(error);
+    throw error;
   }
 );
 

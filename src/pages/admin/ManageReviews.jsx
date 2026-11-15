@@ -16,13 +16,8 @@ function ManageReviews() {
   }
 
   useEffect(() => {
-    let active = true;
-    getAllReviews().then((response) => {
-      if (active) setReviews(response);
-    }).catch(() => {
-      if (active) setError("Failed to load reviews");
-    });
-    return () => { active = false; };
+    const timer = window.setTimeout(getData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   async function handleDelete(id) {
@@ -31,7 +26,7 @@ function ManageReviews() {
     try {
       await deleteReviewById(id);
       setMessage("Review deleted successfully");
-      getData();
+      await getData();
     } catch {
       setError("Failed to delete review");
     }

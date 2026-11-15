@@ -15,17 +15,19 @@ function LearnerPayments() {
   const [busy, setBusy] = useState(false);
 
   async function loadData() {
-    const [paymentData, lessonData] = await Promise.all([getPayments(), getLessons()]);
-    setPayments(paymentData || []);
-    setLessons(lessonData || []);
+    try {
+      const paymentData = await getPayments();
+      const lessonData = await getLessons();
+      setPayments(paymentData || []);
+      setLessons(lessonData || []);
+    } catch {
+      setError("Could not load payment information. Please refresh the page.");
+    }
   }
 
   useEffect(() => {
-    let active = true;
-    Promise.all([getPayments(), getLessons()]).then(([paymentData, lessonData]) => {
-      if (active) { setPayments(paymentData || []); setLessons(lessonData || []); }
-    }).catch(() => { if (active) setError("Could not load payment information. Please refresh the page."); });
-    return () => { active = false; };
+    const timer = window.setTimeout(loadData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const paidOrPending = new Set(payments.filter((payment) => payment.status !== "rejected").map((payment) => String(payment.lesson?._id || payment.lesson)));

@@ -25,11 +25,9 @@ function LearnerReviews() {
 
   async function loadData() {
     try {
-      const [plansData, allReviews, lessonsData] = await Promise.all([
-        getTrainingPlans(),
-        getAllReviews(),
-        getLessons(),
-      ]);
+      const plansData = await getTrainingPlans();
+      const allReviews = await getAllReviews();
+      const lessonsData = await getLessons();
       setPlans(plansData);
       const myPlanIds = plansData.map((onePlan) => onePlan._id);
       const completedPlanIds = new Set(lessonsData
@@ -48,20 +46,8 @@ function LearnerReviews() {
   }
 
   useEffect(() => {
-    let active = true;
-    Promise.all([getTrainingPlans(), getAllReviews(), getLessons()]).then(([plansData, allReviews, lessonsData]) => {
-      if (!active) return;
-      setPlans(plansData);
-      const myPlanIds = plansData.map((onePlan) => onePlan._id);
-      const completedPlanIds = new Set(lessonsData
-        .filter((lesson) => lesson.status === "completed")
-        .map((lesson) => String(lesson.TrainingPlan?._id || lesson.TrainingPlan)));
-      setReviewablePlans(plansData.filter((plan) => completedPlanIds.has(String(plan._id))));
-      setReviews(allReviews.filter((oneReview) => oneReview.TrainingPlan && myPlanIds.includes(oneReview.TrainingPlan._id)));
-    }).catch((error) => {
-      console.error("Error loading reviews:", error);
-    });
-    return () => { active = false; };
+    const timer = window.setTimeout(loadData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   function handleChange(event) {
@@ -102,7 +88,7 @@ function LearnerReviews() {
         raiseVoice: false,
         comment: "",
       });
-      loadData();
+      await loadData();
     } catch (err) {
       if (err.response) {
         setError(err.response.data.message);
@@ -143,7 +129,7 @@ function LearnerReviews() {
     try {
       await deleteReviewById(reviewId);
       setMessage("Review deleted successfully.");
-      loadData();
+      await loadData();
     } catch (err) {
       if (err.response) {
         setError(err.response.data.message);

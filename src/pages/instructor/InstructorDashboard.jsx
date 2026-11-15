@@ -11,21 +11,24 @@ function InstructorDashboard({ user }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let active = true;
-    Promise.all([getTrainingPlans(), getLessons(), getPayments()]).then(([plansResponse, lessonsResponse, paymentsResponse]) => {
-      if (!active) return;
+  async function loadDashboard() {
+    try {
+      const plansResponse = await getTrainingPlans();
+      const lessonsResponse = await getLessons();
+      const paymentsResponse = await getPayments();
       setPlans(plansResponse);
       setLessons(lessonsResponse);
       setPayments(paymentsResponse);
+    } catch {
+      setError("Failed to load dashboard");
+    } finally {
       setLoading(false);
-    }).catch(() => {
-      if (active) {
-        setError("Failed to load dashboard");
-        setLoading(false);
-      }
-    });
-    return () => { active = false; };
+    }
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(loadDashboard, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const pendingRequests = plans.filter((plan) => plan.status === "pending");

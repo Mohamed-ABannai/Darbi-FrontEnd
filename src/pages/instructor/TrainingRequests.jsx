@@ -22,9 +22,8 @@ function TrainingRequests() {
   }
 
   useEffect(() => {
-    let active = true;
-    getTrainingPlans().then((response) => { if (active) setPlans(response); }).catch(() => { if (active) setError("Failed to load training requests"); });
-    return () => { active = false; };
+    const timer = window.setTimeout(getData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   async function handleAccept(id) {
@@ -66,7 +65,7 @@ function TrainingRequests() {
 
   return (
     <div className="instructor-requests-page">
-      <div className="page-heading"><span className="section-kicker">Learner enquiries</span><h1>Training requests</h1><p>Review each learner’s selected lesson dates and decide what fits your availability. Accepting creates each lesson separately in Manage Lessons.</p></div>
+      <div className="page-heading"><span className="section-kicker">Learner enquiries</span><h1>Training requests</h1><p>Review learner requests and decide whether to work with them. Arrange lessons separately after accepting.</p></div>
 
       {error && <p className="error" role="alert">{error}</p>}
       {message && <p className="success" role="status">{message}</p>}
@@ -78,7 +77,7 @@ function TrainingRequests() {
           <thead>
             <tr>
               <th>Learner</th>
-              <th>Requested lessons</th>
+              <th>Request</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -87,7 +86,7 @@ function TrainingRequests() {
             {pendingPlans.map((plan) => (
               <tr key={plan._id}>
                 <td><strong>{plan.learner?.username || "Learner"}</strong></td>
-                <td>{plan.lessonSchedule?.length ? plan.lessonSchedule.map((slot, index) => <span className="schedule-line" key={`${plan._id}-${index}`}>{slot.date} · {slot.startTime}–{slot.endTime} · {slot.hours} hours</span>) : plan.weeklySchedule?.length ? plan.weeklySchedule.map((slot, index) => <span className="schedule-line" key={`${plan._id}-${index}`}>{slot.day} · {slot.startTime || slot.start || "—"}–{slot.endTime || slot.end || "—"} (legacy)</span>) : "Schedule not provided"}</td>
+                <td>Learner wants to work with you.</td>
                 <td><span className={`status-chip status-${plan.status}`}>{plan.status}</span></td>
                 <td>
                   <button onClick={() => handleAccept(plan._id)}>

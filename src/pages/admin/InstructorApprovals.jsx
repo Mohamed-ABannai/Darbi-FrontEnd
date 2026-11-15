@@ -15,19 +15,14 @@ function InstructorApprovals() {
   }
 
   useEffect(() => {
-    let active = true;
-    getUsers().then((response) => {
-      if (active) setInstructors(response.filter((user) => user.role === "instructor" && !user.isApproved && user.isActive));
-    }).catch(() => {
-      if (active) setError("Failed to load instructors");
-    });
-    return () => { active = false; };
+    const timer = window.setTimeout(getData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   async function handleApprove(id) {
     try {
       await approveInstructor(id);
-      getData();
+      await getData();
     } catch {
       setError("Failed to approve instructor");
     }
@@ -36,7 +31,7 @@ function InstructorApprovals() {
   async function handleReject(id) {
     try {
       await updateUserStatus(id, { isActive: false });
-      getData();
+      await getData();
     } catch {
       setError("Failed to reject instructor");
     }

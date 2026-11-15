@@ -1,12 +1,10 @@
-// src/components/SignInForm/SignInForm.jsx
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 
 import { signIn } from '../services/authService';
 
 
-const SignInForm = ({ setUser }) => {
+function SignInPage({ setUser }) {
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -34,7 +32,7 @@ const SignInForm = ({ setUser }) => {
     } finally {
       setSubmitting(false);
     }
-  };
+  }
 
   return (
     <main className="auth-page">
@@ -77,6 +75,6 @@ const SignInForm = ({ setUser }) => {
       </section>
     </main>
   );
-};
+}
 
-export default SignInForm;
+export default SignInPage;

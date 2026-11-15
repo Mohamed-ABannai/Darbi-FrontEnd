@@ -16,9 +16,8 @@ function InstructorPayments() {
   }
 
   useEffect(() => {
-    let active = true;
-    getPayments().then((response) => { if (active) setPayments(response); }).catch(() => { if (active) setError("Failed to load payments"); });
-    return () => { active = false; };
+    const timer = window.setTimeout(getData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   async function handleStatus(id, status) {
@@ -27,7 +26,7 @@ function InstructorPayments() {
     try {
       await updatePayment(id, { status });
       setMessage("Payment updated successfully");
-      getData();
+      await getData();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update payment");
     }
