@@ -21,6 +21,7 @@ import ManageTraining from "./pages/admin/ManageTraining";
 import ManageReviews from "./pages/admin/ManageReviews";
 import ManageDrivingTests from "./pages/admin/ManageDrivingTests";
 import ManageAdmins from "./pages/admin/ManageAdmins";
+import ManageExaminers from "./pages/admin/ManageExaminers";
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 import TrainingRequests from "./pages/instructor/TrainingRequests";
 import MyLearners from "./pages/instructor/MyLearners";
@@ -313,6 +314,17 @@ function App() {
           element={
             user?.role === "superAdmin" ? (
               <ManageAdmins />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
+          }
+        />
+
+        <Route
+          path="/admin/examiners"
+          element={
+            user?.role === "admin" || user?.role === "superAdmin" ? (
+              <ManageExaminers />
             ) : (
               <Navigate to="/dashboard" />
             )

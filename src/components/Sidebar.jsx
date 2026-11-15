@@ -27,6 +27,7 @@ const navigation = {
   admin: [
     { label: "Dashboard", path: "/dashboard", icon: "grid" },
     { label: "Manage Users", path: "/admin/users", icon: "users" },
+    { label: "Manage Examiners", path: "/admin/examiners", icon: "check" },
     { label: "Instructor Approvals", path: "/admin/instructor-approvals", icon: "check" },
     { label: "Manage Training", path: "/admin/training", icon: "book" },
     { label: "Manage Reviews", path: "/admin/reviews", icon: "star" },
