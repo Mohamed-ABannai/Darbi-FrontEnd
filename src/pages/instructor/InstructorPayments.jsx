@@ -10,20 +10,22 @@ function InstructorPayments() {
     try {
       const response = await getPayments();
       setPayments(response);
-    } catch (err) {
+    } catch {
       setError("Failed to load payments");
     }
   }
 
   useEffect(() => {
-    getData();
+    let active = true;
+    getPayments().then((response) => { if (active) setPayments(response); }).catch(() => { if (active) setError("Failed to load payments"); });
+    return () => { active = false; };
   }, []);
 
   async function handleStatus(id, status) {
     setError("");
     setMessage("");
     try {
-      const response = await updatePayment(id, { status });
+      await updatePayment(id, { status });
       setMessage("Payment updated successfully");
       getData();
     } catch (err) {
@@ -32,18 +34,19 @@ function InstructorPayments() {
   }
 
   return (
-    <div>
-      <h1>Instructor Payments</h1>
-      <p>Review and manage learner payments.</p>
-      {error && <p>{error}</p>}
-      {message && <p>{message}</p>}
+    <div className="instructor-payments-page admin-table-page">
+      <div className="page-heading"><span className="section-kicker">Payment review</span><h1>Instructor payments</h1><p>Confirm or reject learner payments, then review their payment status here.</p></div>
+      {error && <p className="error" role="alert">{error}</p>}
+      {message && <p className="success" role="status">{message}</p>}
       {payments.length === 0 ? (
-        <p>No payments found.</p>
+        <div className="empty-state"><h2>No payments yet</h2><p>Learner payment submissions will appear here when ready for review.</p></div>
       ) : (
-        <table>
+      <div className="table-scroll"><table>
           <thead>
             <tr>
+              <th>Learner / lesson</th>
               <th>Amount</th>
+              <th>Method</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
@@ -51,8 +54,10 @@ function InstructorPayments() {
           <tbody>
             {payments.map((payment) => (
               <tr key={payment._id}>
-                <td>{payment.amount} BHD</td>
-                <td>{payment.status}</td>
+              <td><strong>{payment.lesson?.TrainingPlan?.learner?.username || "Learner"}</strong>{payment.lesson?.date && <small className="table-secondary">{new Date(payment.lesson.date).toLocaleDateString()} · {Number(payment.lesson.hours || 0)} hours</small>}</td>
+              <td><strong>{Number(payment.amount || 0).toFixed(3)} BHD</strong><small className="table-secondary">{Number(payment.lesson?.hourlyRateSnapshot || (payment.amount / (payment.lesson?.hours || 1))).toFixed(3)} BHD/hour</small></td>
+              <td>{payment.method}</td>
+              <td><span className={`status-chip status-${payment.status}`}>{payment.status}</span></td>
                 <td>
                   {payment.status === "pending" && (
                     <div>
@@ -64,7 +69,7 @@ function InstructorPayments() {
               </tr>
             ))}
           </tbody>
-        </table>
+      </table></div>
       )}
     </div>
   );

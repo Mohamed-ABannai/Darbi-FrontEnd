@@ -14,4 +14,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+    const serverMessage = error.response?.data?.err || error.response?.data?.message;
+    const accountUnavailable = serverMessage === "Account is not active." || serverMessage === "Account is deactivated.";
+
+    if (status === 401 || (status === 403 && accountUnavailable)) {
+      localStorage.removeItem("token");
+      window.dispatchEvent(new Event("darbi:auth-expired"));
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export default api;

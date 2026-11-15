@@ -12,13 +12,22 @@ function LearnerLessons() {
     try {
       const data = await getLessons();
       if (data) setLessons(data);
-    } catch (err) {
-      console.error("Error fetching lessons:", err);
+      setError("");
+    } catch {
+      setError("Could not load your lessons. Please refresh the page.");
     }
   }
 
   useEffect(() => {
-    loadLessons();
+    let active = true;
+    getLessons().then((data) => {
+      if (!active) return;
+      setLessons(data || []);
+      setError("");
+    }).catch(() => {
+      if (active) setError("Could not load your lessons. Please refresh the page.");
+    });
+    return () => { active = false; };
   }, []);
 
   async function handleCancelSubmit(event) {
@@ -41,9 +50,15 @@ function LearnerLessons() {
     }
   }
 
+  async function beginCancel(id) {
+    if (!window.confirm("Cancel this lesson only? Other lessons and your training plan will stay active.")) return;
+    setCancellingLessonId(id);
+    setCancellationReason("");
+  }
+
   const completedHours = lessons
     .filter((lesson) => lesson.status === "completed")
-    .reduce((total, lesson) => total + (lesson.hours || 0), 0);
+    .reduce((total, lesson) => total + Number(lesson.hours || 0), 0);
 
   return (
     <div className="learner-lessons-page">
@@ -58,15 +73,16 @@ function LearnerLessons() {
 
       <hr />
 
-      {lessons.length === 0 ? (
+      {error ? null : lessons.length === 0 ? (
         <p>No lessons scheduled yet.</p>
       ) : (
         <div className="lessons-list">
           {lessons.map((oneLesson) => (
             <div key={oneLesson._id} className="lesson-card">
               <p>
-                <b>Date & Time:</b> {new Date(oneLesson.date).toLocaleString()}
+                <b>Date & Time:</b> {new Date(oneLesson.date).toLocaleString("en-BH", { timeZone: "Asia/Bahrain" })}
               </p>
+              <p><b>Instructor:</b> {oneLesson.TrainingPlan?.instructor?.username || "Instructor"}</p>
               <p>
                 <b>Duration:</b> {oneLesson.hours} hours
               </p>
@@ -82,11 +98,7 @@ function LearnerLessons() {
 
               {oneLesson.status === "scheduled" && (
                 <button
-                  onClick={() => {
-                    setCancellingLessonId(oneLesson._id);
-                    setCancellationReason("");
-                    setError("");
-                  }}
+                  onClick={() => { setError(""); beginCancel(oneLesson._id); }}
                 >
                   Cancel Lesson
                 </button>

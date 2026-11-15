@@ -6,7 +6,18 @@ import {
   completeLesson,
   cancelLesson
 } from "../../services/lessonService";
-import { getTrainingPlans } from "../../services/trainingPlanService";
+import { getTrainingPlans, schedulePlanLessons } from "../../services/trainingPlanService";
+
+function toDateTimeLocalValue(date) {
+  if (!date) return "";
+  const localDate = new Date(date);
+  return new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
+
+function getDateTimeLocalMinimum() {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
 
 function InstructorLessons() {
   const [lessons, setLessons] = useState([]);
@@ -28,13 +39,21 @@ function InstructorLessons() {
       setLessons(lessonsResponse);
       const plansResponse = await getTrainingPlans();
       setPlans(plansResponse);
-    } catch (err) {
+    } catch {
       setError("Failed to load lessons");
     }
   }
 
   useEffect(() => {
-    getData();
+    let active = true;
+    Promise.all([getLessons(), getTrainingPlans()]).then(([lessonsResponse, plansResponse]) => {
+      if (!active) return;
+      setLessons(lessonsResponse);
+      setPlans(plansResponse);
+    }).catch(() => {
+      if (active) setError("Failed to load lessons");
+    });
+    return () => { active = false; };
   }, []);
 
   function handleChange(event) {
@@ -49,10 +68,16 @@ function InstructorLessons() {
     setError("");
     setMessage("");
 
+    const lessonDate = new Date(formData.date);
+    if (Number.isNaN(lessonDate.getTime()) || lessonDate <= new Date()) {
+      setError("Choose a future lesson date and time.");
+      return;
+    }
+
     try {
       const lessonData = {
         TrainingPlan: formData.TrainingPlan,
-        date: formData.date,
+        date: lessonDate.toISOString(),
         hours: Number(formData.hours)
       };
 
@@ -84,7 +109,7 @@ function InstructorLessons() {
     setMessage("");
     setFormData({
       TrainingPlan: lesson.TrainingPlan?._id || lesson.TrainingPlan || "",
-      date: lesson.date ? lesson.date.slice(0, 16) : "",
+      date: toDateTimeLocalValue(lesson.date),
       hours: lesson.hours || ""
     });
   }
@@ -131,13 +156,37 @@ function InstructorLessons() {
     }
   }
 
-  return (
-    <div>
-      <h1>Instructor Lessons</h1>
-      <p>Manage your training lessons.</p>
+  async function confirmCancel(id) {
+    if (!window.confirm("Cancel this lesson only? The training plan and its other lessons will stay unchanged.")) return;
+    setCancellingLessonId(id);
+    setCancellationReason("");
+  }
 
-      {error && <p>{error}</p>}
-      {message && <p>{message}</p>}
+  async function handleSchedulePlan(id) {
+    setError("");
+    setMessage("");
+    try {
+      await schedulePlanLessons(id);
+      setMessage("Upcoming lessons scheduled from the learner’s weekly plan.");
+      await getData();
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not schedule lessons for this plan.");
+    }
+  }
+
+  return (
+    <div className="instructor-lessons-page">
+      <div className="page-heading"><span className="section-kicker">Teaching schedule</span><h1>Manage lessons</h1><p>Accepted plans schedule the learner’s selected dates as individual lessons. Record completion or cancellation separately for each session.</p></div>
+
+      {error && <p className="error" role="alert">{error}</p>}
+      {message && <p className="success" role="status">{message}</p>}
+
+      {plans.filter((plan) => plan.status === "active" && !lessons.some((lesson) => String(lesson.TrainingPlan?._id || lesson.TrainingPlan) === String(plan._id))).map((plan) => (
+        <div className="empty-state compact-empty" key={`schedule-${plan._id}`}>
+          <p>No lessons are scheduled yet for {plan.learner?.username || "this learner"}.</p>
+          <button type="button" onClick={() => handleSchedulePlan(plan._id)}>Schedule upcoming weekly lessons</button>
+        </div>
+      ))}
 
       <h2>{editingLessonId ? "Edit Lesson" : "Create Lesson"}</h2>
 
@@ -165,6 +214,7 @@ function InstructorLessons() {
           <input
             id="date"
             type="datetime-local"
+            min={getDateTimeLocalMinimum()}
             name="date"
             value={formData.date}
             onChange={handleChange}
@@ -225,7 +275,7 @@ function InstructorLessons() {
                   <td>{plan?.learner?.username || "Learner"}</td>
                   <td>
                     {lesson.date
-                      ? new Date(lesson.date).toLocaleString()
+                      ? new Date(lesson.date).toLocaleString("en-BH", { timeZone: "Asia/Bahrain" })
                       : "Not scheduled"}
                   </td>
                   <td>{lesson.hours}</td>
@@ -269,12 +319,7 @@ function InstructorLessons() {
                             </button>
                           </div>
                         ) : (
-                          <button
-                            onClick={() => {
-                              setCancellingLessonId(lesson._id);
-                              setCancellationReason("");
-                            }}
-                          >
+                          <button onClick={() => confirmCancel(lesson._id)}>
                             Cancel Lesson
                           </button>
                         )}

@@ -16,13 +16,15 @@ function TrainingRequests() {
     try {
       const response = await getTrainingPlans();
       setPlans(response);
-    } catch (err) {
+    } catch {
       setError("Failed to load training requests");
     }
   }
 
   useEffect(() => {
-    getData();
+    let active = true;
+    getTrainingPlans().then((response) => { if (active) setPlans(response); }).catch(() => { if (active) setError("Failed to load training requests"); });
+    return () => { active = false; };
   }, []);
 
   async function handleAccept(id) {
@@ -63,20 +65,20 @@ function TrainingRequests() {
   const pendingPlans = plans.filter((plan) => plan.status === "pending");
 
   return (
-    <div>
-      <h1>Training Requests</h1>
-      <p>View and respond to learner training requests.</p>
+    <div className="instructor-requests-page">
+      <div className="page-heading"><span className="section-kicker">Learner enquiries</span><h1>Training requests</h1><p>Review each learner’s selected lesson dates and decide what fits your availability. Accepting creates each lesson separately in Manage Lessons.</p></div>
 
-      {error && <p>{error}</p>}
-      {message && <p>{message}</p>}
+      {error && <p className="error" role="alert">{error}</p>}
+      {message && <p className="success" role="status">{message}</p>}
 
       {pendingPlans.length === 0 ? (
-        <p>No pending training requests.</p>
+        <div className="empty-state"><h2>All caught up</h2><p>New training requests will appear here.</p></div>
       ) : (
         <table>
           <thead>
             <tr>
               <th>Learner</th>
+              <th>Requested lessons</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -84,8 +86,9 @@ function TrainingRequests() {
           <tbody>
             {pendingPlans.map((plan) => (
               <tr key={plan._id}>
-                <td>{plan.learner?.username || "Learner"}</td>
-                <td>{plan.status}</td>
+                <td><strong>{plan.learner?.username || "Learner"}</strong></td>
+                <td>{plan.lessonSchedule?.length ? plan.lessonSchedule.map((slot, index) => <span className="schedule-line" key={`${plan._id}-${index}`}>{slot.date} · {slot.startTime}–{slot.endTime} · {slot.hours} hours</span>) : plan.weeklySchedule?.length ? plan.weeklySchedule.map((slot, index) => <span className="schedule-line" key={`${plan._id}-${index}`}>{slot.day} · {slot.startTime || slot.start || "—"}–{slot.endTime || slot.end || "—"} (legacy)</span>) : "Schedule not provided"}</td>
+                <td><span className={`status-chip status-${plan.status}`}>{plan.status}</span></td>
                 <td>
                   <button onClick={() => handleAccept(plan._id)}>
                     Accept
@@ -100,6 +103,7 @@ function TrainingRequests() {
                         id={`reason-${plan._id}`}
                         type="text"
                         minLength={20}
+                        maxLength={140}
                         value={reason}
                         onChange={(event) => setReason(event.target.value)}
                       />

@@ -10,59 +10,57 @@ function InstructorDetails() {
 
   const [instructor, setInstructor] = useState(null);
   const [reviews, setReviews] = useState([]);
-  const [schedule, setSchedule] = useState({
-    day: "Sunday",
-    startTime: "09:00",
-    endTime: "11:00",
-  });
+  const [lessons, setLessons] = useState([{ date: "", startTime: "09:00", endTime: "11:00" }]);
   const [error, setError] = useState("");
-
-  async function loadData() {
-    try {
-      const instructorData = await getUserById(id);
-      setInstructor(instructorData);
-
-      const reviewsData = await getAllReviews(id);
-      setReviews(reviewsData);
-    } catch (err) {
-      console.error("Error loading instructor details:", err);
-    }
-  }
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    loadData();
+    let active = true;
+    Promise.all([getUserById(id), getAllReviews(id)]).then(([instructorData, reviewsData]) => {
+      if (!active) return;
+      setInstructor(instructorData);
+      setReviews(reviewsData);
+    }).catch((err) => {
+      console.error("Error loading instructor details:", err);
+    });
+    return () => { active = false; };
   }, [id]);
 
-  function handleScheduleChange(e) {
-    setSchedule({ ...schedule, [e.target.name]: e.target.value });
+  function handleScheduleChange(index, e) {
+    setLessons((current) => current.map((lesson, i) => i === index ? { ...lesson, [e.target.name]: e.target.value } : lesson));
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
+    setError("");
+    setSubmitting(true);
     try {
       await createTrainingPlan({
         instructor: id,
-        weeklySchedule: [schedule],
+        lessonSchedule: lessons,
       });
       navigate("/my-plans");
     } catch (err) {
       setError(err?.response?.data?.message || "Failed to send request.");
+    } finally {
+      setSubmitting(false);
     }
   }
 
   return (
     <div className="instructor-details-page">
-      <button onClick={() => navigate(-1)}>Back</button>
+      <button className="back-link" onClick={() => navigate(-1)}>← Back to instructors</button>
 
       {instructor && (
-        <div className="instructor-info">
-          <h1>{instructor.username}</h1>
-          <p>Rate: ${instructor.hourlyRate} / hour</p>
+        <div className="instructor-info profile-feature">
+          <span className="profile-initial profile-initial-large" aria-hidden="true">{(instructor.username || "I").charAt(0).toUpperCase()}</span>
+          <div><span className="section-kicker">Driving instructor</span><h1>{instructor.username}</h1>
+          <p className="rate-display">{instructor.hourlyRate ? <><strong>{Number(instructor.hourlyRate).toFixed(3)} BHD</strong> / hour</> : "Rate not provided"}</p>
           {instructor.availability && (
             <p>
               Available from: {new Date(instructor.availability).toLocaleDateString()}
             </p>
-          )}
+          )}</div>
         </div>
       )}
 
@@ -73,47 +71,18 @@ function InstructorDetails() {
         {error && <p className="error">{error}</p>}
         <form onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="day">Preferred Day:</label>
-            <select
-              id="day"
-              name="day"
-              value={schedule.day}
-              onChange={handleScheduleChange}
-            >
-              <option value="Sunday">Sunday</option>
-              <option value="Monday">Monday</option>
-              <option value="Tuesday">Tuesday</option>
-              <option value="Wednesday">Wednesday</option>
-              <option value="Thursday">Thursday</option>
-              <option value="Saturday">Saturday</option>
-            </select>
+            {lessons.map((lesson, index) => <fieldset key={index}>
+              <legend>Lesson {index + 1}</legend>
+              <label>Date<input type="date" name="date" value={lesson.date} min={new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Bahrain" })} onChange={(event) => handleScheduleChange(index, event)} required /></label>
+              <label>Start time<input type="time" name="startTime" value={lesson.startTime} onChange={(event) => handleScheduleChange(index, event)} required /></label>
+              <label>End time<input type="time" name="endTime" value={lesson.endTime} onChange={(event) => handleScheduleChange(index, event)} required /></label>
+              <p>{lesson.date || "Choose a date"} · {lesson.startTime}–{lesson.endTime} · {lesson.startTime < lesson.endTime ? ( (Number(lesson.endTime.slice(0,2))*60+Number(lesson.endTime.slice(3))-Number(lesson.startTime.slice(0,2))*60-Number(lesson.startTime.slice(3)))/60).toFixed(2) : "Invalid duration"} hours · {instructor?.username || "Instructor"}</p>
+              {lessons.length > 1 && <button type="button" onClick={() => setLessons((current) => current.filter((_, i) => i !== index))}>Remove lesson</button>}
+            </fieldset>)}
+            <button type="button" onClick={() => setLessons((current) => [...current, { date: "", startTime: "09:00", endTime: "11:00" }])}>Add lesson</button>
           </div>
 
-          <div>
-            <label htmlFor="startTime">Start Time:</label>
-            <input
-              type="time"
-              id="startTime"
-              name="startTime"
-              value={schedule.startTime}
-              onChange={handleScheduleChange}
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="endTime">End Time:</label>
-            <input
-              type="time"
-              id="endTime"
-              name="endTime"
-              value={schedule.endTime}
-              onChange={handleScheduleChange}
-              required
-            />
-          </div>
-
-          <button type="submit">Send Request</button>
+          <button type="submit" disabled={submitting}>{submitting ? "Sending request…" : "Send training request"}</button>
         </form>
       </div>
 
@@ -126,7 +95,7 @@ function InstructorDetails() {
         ) : (
           reviews.map((oneReview) => (
             <div key={oneReview._id} className="review-card">
-              <p>Rating: {oneReview.rating} / 5</p>
+              <p className="review-rating"><span aria-label={`${oneReview.rating} out of 5 stars`}>★</span> {oneReview.rating} / 5</p>
               <p>Patience: {oneReview.patience} / 5</p>
               {oneReview.raiseVoice && <p>Raised Voice: Yes</p>}
               <p>Comment: {oneReview.comment}</p>

@@ -7,26 +7,22 @@ function MyLearners() {
   const [lessons, setLessons] = useState([]);
   const [error, setError] = useState("");
 
-  async function getData() {
-    try {
-      const plansResponse = await getTrainingPlans();
-      const lessonsResponse = await getLessons();
+  useEffect(() => {
+    let active = true;
+    Promise.all([getTrainingPlans(), getLessons()]).then(([plansResponse, lessonsResponse]) => {
+      if (!active) return;
       setPlans(plansResponse.filter((plan) => plan.status === "active"));
       setLessons(lessonsResponse);
-    } catch (err) {
-      setError("Failed to load learners");
-    }
-  }
-
-  useEffect(() => {
-    getData();
+    }).catch(() => {
+      if (active) setError("Failed to load learners");
+    });
+    return () => { active = false; };
   }, []);
 
   return (
-    <div>
-      <h1>My Learners</h1>
-      <p>View your assigned learners and their training progress.</p>
-      {error && <p>{error}</p>}
+    <div className="my-learners-page">
+      <div className="page-heading"><span className="section-kicker">Your roster</span><h1>My learners</h1><p>Keep track of each active learner’s lessons and progress toward the 22-hour training target.</p></div>
+      {error && <p className="error" role="alert">{error}</p>}
       {plans.length === 0 ? (
         <p>No active learners found.</p>
       ) : (
@@ -44,14 +40,8 @@ function MyLearners() {
               <tr key={plan._id}>
                 <td>{plan.learner?.username || "Learner"}</td>
                 <td>{plan.status}</td>
-                <td>
-                  {lessons.filter((lesson) => lesson.TrainingPlan === plan._id && lesson.status === "completed").length}
-                </td>
-                <td>
-                  {lessons
-                    .filter((lesson) => lesson.TrainingPlan === plan._id && lesson.status === "completed")
-                    .reduce((total, lesson) => total + lesson.hours, 0)}
-                </td>
+                <td>{lessons.filter((lesson) => String(lesson.TrainingPlan?._id || lesson.TrainingPlan) === String(plan._id) && lesson.status === "completed").length}</td>
+                <td>{lessons.filter((lesson) => String(lesson.TrainingPlan?._id || lesson.TrainingPlan) === String(plan._id) && lesson.status === "completed").reduce((total, lesson) => total + Number(lesson.hours || 0), 0)} / 22 hrs</td>
               </tr>
             ))}
           </tbody>

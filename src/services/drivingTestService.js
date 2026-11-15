@@ -5,6 +5,11 @@ export async function getDrivingTests() {
   return response.data;
 }
 
+export async function getDrivingTestEligibility() {
+  const response = await api.get("/driving-tests/eligibility");
+  return response.data;
+}
+
 export async function createDrivingTest(testData) {
   const response = await api.post("/driving-tests", testData);
   return response.data;

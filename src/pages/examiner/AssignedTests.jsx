@@ -10,20 +10,22 @@ function AssignedTests() {
     try {
       const response = await getDrivingTests();
       setTests(response);
-    } catch (err) {
+    } catch {
       setError("Failed to load assigned tests");
     }
   }
 
   useEffect(() => {
-    getData();
+    let active = true;
+    getDrivingTests().then((response) => { if (active) setTests(response); }).catch(() => { if (active) setError("Failed to load assigned tests"); });
+    return () => { active = false; };
   }, []);
 
   async function handleResult(id, result) {
     setError("");
     setMessage("");
     try {
-      const response = await submitDrivingTestResult(id, result);
+      await submitDrivingTestResult(id, result);
       setMessage("Test result submitted successfully");
       getData();
     } catch (err) {
@@ -32,15 +34,14 @@ function AssignedTests() {
   }
 
   return (
-    <div>
-      <h1>Assigned Driving Tests</h1>
-      <p>View your assigned tests and record results.</p>
-      {error && <p>{error}</p>}
-      {message && <p>{message}</p>}
+    <div className="assigned-tests-page admin-table-page">
+      <div className="page-heading"><span className="section-kicker">Examiner workspace</span><h1>Assigned tests</h1><p>Review scheduled candidates and record pass or fail results after each test.</p></div>
+      {error && <p className="error" role="alert">{error}</p>}
+      {message && <p className="success" role="status">{message}</p>}
       {tests.length === 0 ? (
-        <p>No assigned driving tests found.</p>
+        <div className="empty-state"><h2>No tests assigned</h2><p>New examiner assignments will show here.</p></div>
       ) : (
-        <table>
+      <div className="table-scroll"><table>
           <thead>
             <tr>
               <th>Learner</th>
@@ -56,7 +57,7 @@ function AssignedTests() {
               <tr key={test._id}>
                 <td>{test.Learner?.username || "Learner"}</td>
                 <td>{test.date ? new Date(test.date).toLocaleString() : "Not scheduled"}</td>
-                <td>{test.status}</td>
+                <td><span className={`status-chip status-${test.status}`}>{test.status}</span></td>
                 <td>{test.result}</td>
                 <td>{test.extraHours || 0}</td>
                 <td>
@@ -70,7 +71,7 @@ function AssignedTests() {
               </tr>
             ))}
           </tbody>
-        </table>
+      </table></div>
       )}
     </div>
   );

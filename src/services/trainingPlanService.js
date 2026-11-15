@@ -51,3 +51,8 @@ export async function updateWeeklySchedule(id, weeklySchedule) {
   });
   return response.data;
 }
+
+export async function schedulePlanLessons(id) {
+  const response = await api.post(`/training-plans/${id}/schedule`);
+  return response.data;
+}

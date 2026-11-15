@@ -18,13 +18,19 @@ function ManageAdmins() {
     try {
       const response = await getUsers();
       setAdmins(response.filter((user) => user.role === "admin"));
-    } catch (err) {
+    } catch {
       setError("Failed to load admins");
     }
   }
 
   useEffect(() => {
-    getData();
+    let active = true;
+    getUsers().then((response) => {
+      if (active) setAdmins(response.filter((user) => user.role === "admin"));
+    }).catch(() => {
+      if (active) setError("Failed to load admins");
+    });
+    return () => { active = false; };
   }, []);
 
   function handleChange(event) {
@@ -36,7 +42,7 @@ function ManageAdmins() {
     setError("");
     setMessage("");
     try {
-      const response = await createAdmin(formData);
+      await createAdmin(formData);
       setMessage("Admin created successfully");
       setFormData({
         username: "",
@@ -55,21 +61,20 @@ function ManageAdmins() {
     setError("");
     setMessage("");
     try {
-      const response = await updateUserStatus(admin._id, { isActive: !admin.isActive });
+      await updateUserStatus(admin._id, { isActive: !admin.isActive });
       setMessage("Admin status updated successfully");
       getData();
-    } catch (err) {
+    } catch {
       setError("Failed to update admin status");
     }
   }
 
   return (
-    <div>
-      <h1>Manage Admins</h1>
-      <p>Create and manage admin accounts.</p>
-      {error && <p>{error}</p>}
-      {message && <p>{message}</p>}
-      <h2>Create Admin</h2>
+    <div className="manage-admins-page admin-table-page">
+      <div className="page-heading"><span className="section-kicker">Privileged access</span><h1>Manage admins</h1><p>Create trusted administrator accounts and review their access status.</p></div>
+      {error && <p className="error" role="alert">{error}</p>}
+      {message && <p className="success" role="status">{message}</p>}
+      <h2>Create an admin account</h2>
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="username">Username</label>
@@ -93,8 +98,8 @@ function ManageAdmins() {
         </div>
         <button type="submit">Create Admin</button>
       </form>
-      <h2>Admin Accounts</h2>
-      <table>
+      <h2>Admin accounts</h2>
+      <div className="table-scroll"><table>
         <thead>
           <tr>
             <th>Username</th>
@@ -108,7 +113,7 @@ function ManageAdmins() {
             <tr key={admin._id}>
               <td>{admin.username}</td>
               <td>{admin.email}</td>
-              <td>{admin.isActive ? "Active" : "Inactive"}</td>
+              <td><span className={`status-chip ${admin.isActive ? "status-active" : "status-inactive"}`}>{admin.isActive ? "Active" : "Inactive"}</span></td>
               <td>
                 <button onClick={() => handleStatus(admin)}>
                   {admin.isActive ? "Deactivate" : "Activate"}
@@ -117,7 +122,7 @@ function ManageAdmins() {
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
     </div>
   );
 }

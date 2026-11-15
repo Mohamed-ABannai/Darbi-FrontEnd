@@ -1,22 +1,20 @@
-import { Link } from 'react-router'
+import { Link } from "react-router";
+import logo from "../assets/Darbi.png";
 
-function Navbar({ user, handleLogout }) {
+function Navbar() {
   return (
-    <nav>
-      <Link to='/'>Homepage</Link>
-      {user 
-      ? 
-      (<>
-        <Link to='/dashboard'>Dashboard</Link>
-        <Link to="/profile">My Profile</Link>
-      <button onClick={handleLogout}>Sign Out</button>
-      </>) : 
-      (<>
-        <Link to='/sign-up'>Sign Up</Link>
-        <Link to='/sign-in'>Sign In</Link>
-      </>)}
-    </nav>
-  )
+    <header className="public-header">
+      <Link className="public-brand" to="/" aria-label="Darbi home">
+        <img src={logo} alt="DARBI" />
+        <span aria-hidden="true">DARBI</span>
+      </Link>
+      <nav className="public-nav" aria-label="Main navigation">
+        <Link to="/">Home</Link>
+        <Link to="/sign-in">Sign In</Link>
+        <Link className="public-nav-cta" to="/sign-up">Get Started</Link>
+      </nav>
+    </header>
+  );
 }
 
-export default Navbar
+export default Navbar;

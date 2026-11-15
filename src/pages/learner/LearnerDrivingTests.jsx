@@ -1,15 +1,23 @@
 import { useState, useEffect } from "react";
 import {
   getDrivingTests,
+  getDrivingTestEligibility,
   createDrivingTest,
   cancelDrivingTest,
 } from "../../services/drivingTestService";
+
+function getDateTimeLocalMinimum() {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
 
 function LearnerDrivingTests() {
   const [tests, setTests] = useState([]);
   const [date, setDate] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [cancellingTestId, setCancellingTestId] = useState(null);
+  const [eligibility, setEligibility] = useState(null);
 
   async function loadTests() {
     try {
@@ -21,7 +29,13 @@ function LearnerDrivingTests() {
   }
 
   useEffect(() => {
-    loadTests();
+    let active = true;
+    Promise.all([getDrivingTests(), getDrivingTestEligibility()]).then(([data, eligibilityData]) => {
+      if (active) { setTests(data); setEligibility(eligibilityData); }
+    }).catch((error) => {
+      console.error("Error fetching driving tests:", error);
+    });
+    return () => { active = false; };
   }, []);
 
   async function handleSubmit(event) {
@@ -30,7 +44,12 @@ function LearnerDrivingTests() {
     setMessage("");
 
     try {
-      await createDrivingTest({ date });
+      const requestedDate = new Date(date);
+      if (Number.isNaN(requestedDate.getTime()) || requestedDate <= new Date()) {
+        setError("Choose a future test date and time.");
+        return;
+      }
+      await createDrivingTest({ date: requestedDate.toISOString() });
       setDate("");
       setMessage("Driving test requested successfully!");
       loadTests();
@@ -40,11 +59,18 @@ function LearnerDrivingTests() {
   }
 
   async function handleCancel(testId) {
+    if (!window.confirm("Cancel this driving test request?")) return;
+    setError("");
+    setMessage("");
+    setCancellingTestId(testId);
     try {
       await cancelDrivingTest(testId);
-      loadTests();
+      setMessage("Driving test cancelled successfully.");
+      await loadTests();
     } catch (err) {
-      console.error("Error cancelling test:", err);
+      setError(err.response?.data?.message || "Failed to cancel driving test.");
+    } finally {
+      setCancellingTestId(null);
     }
   }
 
@@ -54,6 +80,7 @@ function LearnerDrivingTests() {
 
       <div className="request-test-section">
         <h2>Request a Driving Test</h2>
+        {eligibility && <p className={eligibility.eligible ? "success" : "field-hint"} role="status">{eligibility.hasActivePlan ? `${Number(eligibility.totalHours)} of ${Number(eligibility.requiredHours)} required training hours completed.${eligibility.remainingHours > 0 ? ` Complete ${eligibility.remainingHours} more hour${eligibility.remainingHours === 1 ? "" : "s"} before booking.` : " You are eligible to request a test."}` : "An active training plan is required before you can request a test."}</p>}
         {error && <p className="error">{error}</p>}
         {message && <p className="success">{message}</p>}
 
@@ -61,13 +88,14 @@ function LearnerDrivingTests() {
           <label htmlFor="testDate">Select Test Date & Time:</label>
           <input
             type="datetime-local"
+            min={getDateTimeLocalMinimum()}
             id="testDate"
             name="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             required
           />
-          <button type="submit">Submit Request</button>
+          <button type="submit" disabled={!eligibility?.eligible}>Submit Request</button>
         </form>
       </div>
 
@@ -97,8 +125,8 @@ function LearnerDrivingTests() {
                 )}
 
                 {oneTest.status === "pending" && (
-                  <button onClick={() => handleCancel(oneTest._id)}>
-                    Cancel Test
+                  <button onClick={() => handleCancel(oneTest._id)} disabled={cancellingTestId === oneTest._id}>
+                    {cancellingTestId === oneTest._id ? "Cancelling…" : "Cancel Test"}
                   </button>
                 )}
               </div>

@@ -11,54 +11,46 @@ function LearnerDashboard({ user }) {
   const [tests, setTests] = useState([]);
   const [plans, setPlans] = useState([]);
 
-  async function loadDashboardData() {
-    try {
-      const lessonsData = await getLessons();
-      if (lessonsData) setLessons(lessonsData);
-
-      const paymentsData = await getPayments();
-      if (paymentsData) setPayments(paymentsData);
-
-      const testsData = await getDrivingTests();
-      if (testsData) setTests(testsData);
-
-      const plansData = await getTrainingPlans();
-      if (plansData) setPlans(plansData);
-    } catch (error) {
-      console.error("Error loading dashboard data:", error);
-    }
-  }
-
   useEffect(() => {
-    loadDashboardData();
+    let active = true;
+    Promise.all([getLessons(), getPayments(), getDrivingTests(), getTrainingPlans()]).then(([lessonsData, paymentsData, testsData, plansData]) => {
+      if (!active) return;
+      setLessons(lessonsData || []);
+      setPayments(paymentsData || []);
+      setTests(testsData || []);
+      setPlans(plansData || []);
+    }).catch((error) => {
+      console.error("Error loading dashboard data:", error);
+    });
+    return () => { active = false; };
   }, []);
 
   const completedHours = lessons
     .filter((lesson) => lesson.status === "completed")
-    .reduce((total, lesson) => total + (lesson.hours || 0), 0);
+    .reduce((total, lesson) => total + Number(lesson.hours || 0), 0);
 
-  const upcomingLessonsCount = lessons.filter(
-    (lesson) => lesson.status === "scheduled",
-  ).length;
+  const upcomingLessons = lessons.filter((lesson) => lesson.status === "scheduled" && new Date(lesson.date) >= new Date()).sort((a,b) => new Date(a.date)-new Date(b.date));
+  const upcomingLessonsCount = upcomingLessons.length;
 
   const pendingPaymentsCount = payments.filter(
-    (payment) => payment.status === "pending",
+    (payment) => payment.status === "pending" || payment.status === "unsubmitted",
   ).length;
 
-  const latestTest = tests.length > 0 ? tests[tests.length - 1] : null;
+  const latestTest = [...tests].sort((a,b) => new Date(b.date || 0)-new Date(a.date || 0))[0] || null;
 
   const activePlan = plans.find((p) => p.status === "active");
   return (
     <div className="learner-dashboard-page">
-      <div className="dashboard-header">
-        <h1>Welcome, {user.username} 👋</h1>
-        <p>Track your driving lessons, hours, payments, and test readiness.</p>
+      <div className="dashboard-header page-heading">
+        <span className="section-kicker">Your learner space</span><h1>Good to see you, {user.username}</h1>
+        <p>Every lesson is a step closer to feeling at home behind the wheel.</p>
       </div>
 
       <div className="stats-grid">
-        <div className="stat-card">
+        <div className="stat-card progress-stat">
           <h3>Training Hours</h3>
           <p className="stat-value">{completedHours} / 22 hrs</p>
+          <div className="progress-track" role="progressbar" aria-label="Training hours completed" aria-valuenow={Math.min(completedHours,22)} aria-valuemin="0" aria-valuemax="22"><span style={{width:`${Math.min(100,Math.max(0,completedHours/22*100))}%`}} /></div>
           <Link to="/lessons">View Lessons</Link>
         </div>
 
@@ -83,6 +75,8 @@ function LearnerDashboard({ user }) {
         </div>
       </div>
 
+      <section className="dashboard-section next-lesson-section"><div className="section-title-row"><div><span className="section-kicker">Coming up</span><h2>Next lesson</h2></div><Link to="/lessons">View schedule →</Link></div>{upcomingLessons[0] ? <div className="next-lesson-card"><span className="next-date">{new Date(upcomingLessons[0].date).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})}</span><div><h3>Driving lesson</h3><p>{new Date(upcomingLessons[0].date).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})} · {upcomingLessons[0].hours} hours</p></div><span className="status-chip status-scheduled">Scheduled</span></div> : <div className="empty-state compact-empty"><p>No upcoming lessons yet.</p><Link to={activePlan ? "/lessons" : "/find-instructors"}>{activePlan ? "View your lessons" : "Find an instructor"} →</Link></div>}</section>
+
       <div className="dashboard-overview-section">
         <h2>Active Training Plan</h2>
         {activePlan ? (
@@ -94,7 +88,7 @@ function LearnerDashboard({ user }) {
               <b>Status:</b> {activePlan.status}
             </p>
             <p>
-              <b>Rate:</b> ${activePlan.instructor?.hourlyRate} / hour
+              <b>Rate:</b> {(activePlan.hourlyRateSnapshot || activePlan.instructor?.hourlyRate) ? `${Number(activePlan.hourlyRateSnapshot || activePlan.instructor.hourlyRate).toFixed(3)} BHD / hour` : "Not provided"}
             </p>
             <Link to="/my-plans">View Full Plan Details</Link>
           </div>

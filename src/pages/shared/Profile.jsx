@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getUserById, updateProfile } from "../../services/userService";
+import { getUserById, updateProfile, getProfileImage } from "../../services/userService";
 
 function Profile({ user }) {
   const [formData, setFormData] = useState({
@@ -13,6 +13,8 @@ function Profile({ user }) {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [photoPreview, setPhotoPreview] = useState("");
+  const [saving, setSaving] = useState(false);
 
   async function getData() {
     try {
@@ -24,14 +26,41 @@ function Profile({ user }) {
         hourlyRate: response.hourlyRate || "",
         availability: response.availability ? response.availability.slice(0, 10) : ""
       });
-    } catch (err) {
+      try {
+        const image = await getProfileImage(user._id);
+        setPhotoPreview(URL.createObjectURL(image));
+      } catch {
+        // A profile image is optional; keep the initials avatar when none is stored.
+      }
+    } catch {
       setError("Failed to load profile");
     }
     setLoading(false);
   }
 
   useEffect(() => {
-    getData();
+    let active = true;
+    getUserById(user._id).then(async (response) => {
+      if (!active) return;
+      setFormData({
+        phone: response.phone || "",
+        email: response.email || "",
+        dateOfBirth: response.dateOfBirth ? response.dateOfBirth.slice(0, 10) : "",
+        hourlyRate: response.hourlyRate || "",
+        availability: response.availability ? response.availability.slice(0, 10) : ""
+      });
+      try {
+        const image = await getProfileImage(user._id);
+        if (active) setPhotoPreview(URL.createObjectURL(image));
+      } catch {
+        if (active) setPhotoPreview("");
+      }
+    }).catch(() => {
+      if (active) setError("Failed to load profile");
+    }).finally(() => {
+      if (active) setLoading(false);
+    });
+    return () => { active = false; };
   }, [user._id]);
 
   function handleChange(event) {
@@ -41,10 +70,24 @@ function Profile({ user }) {
     });
   }
 
+  function handlePhotoChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+      setError(file.size > 5 * 1024 * 1024 ? "The profile photo must be 5 MB or smaller." : "Choose an image file to use as your profile photo.");
+      event.target.value = "";
+      return;
+    }
+    setError("");
+    setProfileImage(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
     setMessage("");
+    setSaving(true);
     try {
       const data = new FormData();
       data.append("phone", formData.phone);
@@ -65,9 +108,12 @@ function Profile({ user }) {
       }
       const response = await updateProfile(user._id, data);
       setMessage(response.message || "Profile updated successfully");
+      if (profileImage) window.dispatchEvent(new Event("darbi:profile-image-updated"));
       getData();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update profile");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -75,15 +121,11 @@ function Profile({ user }) {
 
   return (
     <div>
-      <h1>My Profile</h1>
-      <p>View and update your DARBI profile.</p>
-      <h2>Account Information</h2>
-      <p>Username: {user.username}</p>
-      <p>Role: {user.role}</p>
-
-      <h2>Edit Profile</h2>
-      {error && <p>{error}</p>}
-      {message && <p>{message}</p>}
+      <div className="page-heading"><span className="section-kicker">Your account</span><h1>Profile & settings</h1><p>Keep your contact details up to date.</p></div>
+      <section className="profile-overview"><div className="profile-avatar-wrap">{photoPreview ? <img className="profile-photo" src={photoPreview} alt={`${user.username} profile`} /> : <span className="profile-initial profile-initial-large">{(user.username || "D").charAt(0).toUpperCase()}</span>}</div><div><h2>{user.username}</h2><span className="role-pill">{user.role}</span></div></section>
+      <section className="profile-edit"><h2>Personal details</h2>
+      {error && <p className="error" role="alert">{error}</p>}
+      {message && <p className="success" role="status">{message}</p>}
 
       <form onSubmit={handleSubmit}>
         <div>
@@ -100,7 +142,8 @@ function Profile({ user }) {
         </div>
         <div>
           <label htmlFor="profileImage">Profile Image</label>
-          <input id="profileImage" type="file" name="profileImage" accept=".jpg,.jpeg,.png,.webp" onChange={(event) => setProfileImage(event.target.files[0])} />
+          <input id="profileImage" type="file" name="profileImage" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoChange} />
+          <small className="field-hint">JPG, PNG, or WebP. Your new photo previews here before saving.</small>
         </div>
 
         {user.role === "instructor" && (
@@ -118,8 +161,8 @@ function Profile({ user }) {
           </div>
         )}
 
-        <button type="submit">Save Changes</button>
-      </form>
+        <button type="submit" disabled={saving}>{saving ? "Saving…" : "Save changes"}</button>
+      </form></section>
     </div>
   );
 }

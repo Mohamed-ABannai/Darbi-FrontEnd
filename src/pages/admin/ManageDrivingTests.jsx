@@ -2,6 +2,11 @@ import { useState, useEffect } from "react";
 import { getDrivingTests, scheduleDrivingTest } from "../../services/drivingTestService";
 import { getUsers } from "../../services/userService";
 
+function getDateTimeLocalMinimum() {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
+
 function ManageDrivingTests() {
   const [drivingTests, setDrivingTests] = useState([]);
   const [examiners, setExaminers] = useState([]);
@@ -18,13 +23,21 @@ function ManageDrivingTests() {
       const usersResponse = await getUsers();
       setDrivingTests(testsResponse);
       setExaminers(usersResponse.filter((user) => user.role === "examiner" && user.isActive));
-    } catch (err) {
+    } catch {
       setError("Failed to load driving tests");
     }
   }
 
   useEffect(() => {
-    getData();
+    let active = true;
+    Promise.all([getDrivingTests(), getUsers()]).then(([testsResponse, usersResponse]) => {
+      if (!active) return;
+      setDrivingTests(testsResponse);
+      setExaminers(usersResponse.filter((user) => user.role === "examiner" && user.isActive));
+    }).catch(() => {
+      if (active) setError("Failed to load driving tests");
+    });
+    return () => { active = false; };
   }, []);
 
   function handleChange(event) {
@@ -35,21 +48,25 @@ function ManageDrivingTests() {
     event.preventDefault();
     setError("");
     try {
-      const response = await scheduleDrivingTest(formData.testId, formData.examiner, formData.date);
+      const testDate = new Date(formData.date);
+      if (Number.isNaN(testDate.getTime()) || testDate <= new Date()) {
+        setError("Choose a future test date and time.");
+        return;
+      }
+      await scheduleDrivingTest(formData.testId, formData.examiner, testDate.toISOString());
       setFormData({ testId: "", examiner: "", date: "" });
-      getData();
+      await getData();
     } catch (err) {
-      setError("Failed to schedule driving test");
+      setError(err.response?.data?.message || "Failed to schedule driving test");
     }
   }
 
   return (
-    <div>
-      <h1>Manage Driving Tests</h1>
-      <p>View driving tests and assign examiners.</p>
-      {error && <p>{error}</p>}
+    <div className="manage-tests-page admin-table-page">
+      <div className="page-heading"><span className="section-kicker">Test coordination</span><h1>Manage driving tests</h1><p>Review requests and assign an active examiner and test time.</p></div>
+      {error && <p className="error" role="alert">{error}</p>}
       <h2>Driving Tests</h2>
-      <table>
+      <div className="table-scroll"><table>
         <thead>
           <tr>
             <th>Learner</th>
@@ -65,12 +82,12 @@ function ManageDrivingTests() {
               <td>{test.Learner?.username}</td>
               <td>{test.examiner?.username || "Not Assigned"}</td>
               <td>{test.date ? new Date(test.date).toLocaleDateString() : "Not Scheduled"}</td>
-              <td>{test.status}</td>
+              <td><span className={`status-chip status-${test.status}`}>{test.status}</span></td>
               <td>{test.result}</td>
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
       <h2>Schedule Driving Test</h2>
       <form onSubmit={handleSubmit}>
         <div>
@@ -93,7 +110,7 @@ function ManageDrivingTests() {
         </div>
         <div>
           <label htmlFor="date">Test Date</label>
-          <input id="date" type="datetime-local" name="date" value={formData.date} onChange={handleChange} required />
+          <input id="date" type="datetime-local" name="date" min={getDateTimeLocalMinimum()} value={formData.date} onChange={handleChange} required />
         </div>
         <button type="submit">Schedule Test</button>
       </form>
