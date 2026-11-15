@@ -6,10 +6,12 @@ import {
   deleteReviewById,
 } from "../../services/reviewService";
 import { getTrainingPlans } from "../../services/trainingPlanService";
+import { getLessons } from "../../services/lessonService";
 
 function LearnerReviews() {
   const [reviews, setReviews] = useState([]);
   const [plans, setPlans] = useState([]);
+  const [reviewablePlans, setReviewablePlans] = useState([]);
   const [formData, setFormData] = useState({
     TrainingPlan: "",
     rating: 5,
@@ -24,10 +26,14 @@ function LearnerReviews() {
   async function loadData() {
     try {
       const plansData = await getTrainingPlans();
-      setPlans(plansData);
-
       const allReviews = await getAllReviews();
+      const lessonsData = await getLessons();
+      setPlans(plansData);
       const myPlanIds = plansData.map((onePlan) => onePlan._id);
+      const completedPlanIds = new Set(lessonsData
+        .filter((lesson) => lesson.status === "completed")
+        .map((lesson) => String(lesson.TrainingPlan?._id || lesson.TrainingPlan)));
+      setReviewablePlans(plansData.filter((plan) => completedPlanIds.has(String(plan._id))));
       const myReviews = allReviews.filter(
         (oneReview) =>
           oneReview.TrainingPlan &&
@@ -40,7 +46,8 @@ function LearnerReviews() {
   }
 
   useEffect(() => {
-    loadData();
+    const timer = window.setTimeout(loadData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   function handleChange(event) {
@@ -81,7 +88,7 @@ function LearnerReviews() {
         raiseVoice: false,
         comment: "",
       });
-      loadData();
+      await loadData();
     } catch (err) {
       if (err.response) {
         setError(err.response.data.message);
@@ -116,12 +123,13 @@ function LearnerReviews() {
   }
 
   async function handleDelete(reviewId) {
+    if (!window.confirm("Delete your review? This action cannot be undone.")) return;
     setError("");
     setMessage("");
     try {
       await deleteReviewById(reviewId);
       setMessage("Review deleted successfully.");
-      loadData();
+      await loadData();
     } catch (err) {
       if (err.response) {
         setError(err.response.data.message);
@@ -157,27 +165,19 @@ function LearnerReviews() {
                 required
               >
                 <option value="">-- Choose Training Plan --</option>
-                {plans.map((onePlan) => (
+                {reviewablePlans.map((onePlan) => (
                   <option key={onePlan._id} value={onePlan._id}>
                     {onePlan.instructor?.username} ({onePlan.status})
                   </option>
                 ))}
               </select>
+              {reviewablePlans.length === 0 && <small className="field-hint">Complete a lesson in a training plan before reviewing its instructor.</small>}
             </div>
           )}
 
           <div>
-            <label htmlFor="rating">Overall Rating (1 - 5):</label>
-            <input
-              type="number"
-              id="rating"
-              name="rating"
-              min="1"
-              max="5"
-              value={formData.rating}
-              onChange={handleChange}
-              required
-            />
+            <span className="field-label" id="rating-label">Overall rating</span>
+            <div className="rating-picker" role="group" aria-labelledby="rating-label">{[1,2,3,4,5].map((score) => <button key={score} type="button" className={score <= Number(formData.rating) ? "is-selected" : ""} aria-label={`${score} star${score === 1 ? "" : "s"}`} aria-pressed={Number(formData.rating) === score} onClick={() => setFormData({...formData,rating:score})}>★</button>)}</div>
           </div>
 
           <div>

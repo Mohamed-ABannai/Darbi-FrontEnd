@@ -12,22 +12,24 @@ function AdminDashboard({ user }) {
   const [payments, setPayments] = useState([]);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function getData() {
-      try {
-        const usersData = await getUsers();
-        const plansData = await getTrainingPlans();
-        const testsData = await getDrivingTests();
-        const paymentsData = await getPayments();
-        setUsers(usersData);
-        setTrainingPlans(plansData);
-        setDrivingTests(testsData);
-        setPayments(paymentsData);
-      } catch (err) {
-        setError("Failed to load dashboard");
-      }
+  async function loadDashboard() {
+    try {
+      const usersData = await getUsers();
+      const plansData = await getTrainingPlans();
+      const testsData = await getDrivingTests();
+      const paymentsData = await getPayments();
+      setUsers(usersData);
+      setTrainingPlans(plansData);
+      setDrivingTests(testsData);
+      setPayments(paymentsData);
+    } catch {
+      setError("Failed to load dashboard");
     }
-    getData();
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(loadDashboard, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const learners = users.filter((user) => user.role === "learner");
@@ -38,29 +40,20 @@ function AdminDashboard({ user }) {
   const completedPayments = payments.filter((payment) => payment.status === "completed");
 
   return (
-    <div>
-      <h1>Admin Dashboard</h1>
-      <p>Overview of the DARBI platform</p>
-      {error && <p>{error}</p>}
-      <div>
-        <h3>Total Users: {users.length}</h3>
-        <h3>Learners: {learners.length}</h3>
-        <h3>Instructors: {instructors.length}</h3>
-        <h3>Pending Instructor Approvals: {pendingInstructors.length}</h3>
-        <h3>Active Training Plans: {activePlans.length}</h3>
-        <h3>Pending Driving Tests: {pendingTests.length}</h3>
-        <h3>Completed Payments: {completedPayments.length}</h3>
-      </div>
+    <div className="admin-dashboard-page role-dashboard">
+      <div className="page-heading"><span className="section-kicker">Operations desk</span><h1>DARBI overview</h1><p>Monitor platform activity and move the important queues forward.</p></div>
+      {error && <p className="error" role="alert">{error}</p>}
+      <div className="stats-grid"><div className="stat-card"><h3>Total users</h3><p className="stat-value">{users.length}</p></div><div className="stat-card"><h3>Learners</h3><p className="stat-value">{learners.length}</p></div><div className="stat-card"><h3>Instructors</h3><p className="stat-value">{instructors.length}</p></div><div className="stat-card stat-attention"><h3>Instructor approvals</h3><p className="stat-value">{pendingInstructors.length}</p><Link to="/admin/instructor-approvals">Review queue →</Link></div><div className="stat-card"><h3>Active plans</h3><p className="stat-value">{activePlans.length}</p></div><div className="stat-card"><h3>Pending tests</h3><p className="stat-value">{pendingTests.length}</p></div><div className="stat-card"><h3>Completed payments</h3><p className="stat-value">{completedPayments.length}</p></div></div>
       <h2>Management</h2>
-      <div>
-        <p><Link to="/admin/users">Manage Users</Link></p>
+      <div className="quick-links-grid admin-quick-links">
+        <Link to="/admin/users">Manage users <span>→</span></Link>
         {user?.role === "superAdmin" && (
-        <p><Link to="/admin/manage-admins">Manage Admins</Link></p>
+        <Link to="/admin/manage-admins">Manage admins <span>→</span></Link>
          )}
-        <p><Link to="/admin/instructor-approvals">Instructor Approvals</Link></p>
-        <p><Link to="/admin/training">Manage Training</Link></p>
-        <p><Link to="/admin/driving-tests">Manage Driving Tests</Link></p>
-        <p><Link to="/admin/reviews">Manage Reviews</Link></p>
+        <Link to="/admin/instructor-approvals">Instructor approvals <span>→</span></Link>
+        <Link to="/admin/training">Manage training <span>→</span></Link>
+        <Link to="/admin/driving-tests">Driving tests <span>→</span></Link>
+        <Link to="/admin/reviews">Review moderation <span>→</span></Link>
       </div>
     </div>
   );

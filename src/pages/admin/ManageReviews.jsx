@@ -10,34 +10,34 @@ function ManageReviews() {
     try {
       const response = await getAllReviews();
       setReviews(response);
-    } catch (err) {
+    } catch {
       setError("Failed to load reviews");
     }
   }
 
   useEffect(() => {
-    getData();
+    const timer = window.setTimeout(getData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   async function handleDelete(id) {
     setError("");
     setMessage("");
     try {
-      const response = await deleteReviewById(id);
+      await deleteReviewById(id);
       setMessage("Review deleted successfully");
-      getData();
-    } catch (err) {
+      await getData();
+    } catch {
       setError("Failed to delete review");
     }
   }
 
   return (
-    <div>
-      <h1>Manage Reviews</h1>
-      <p>View and remove learner reviews.</p>
-      {error && <p>{error}</p>}
-      {message && <p>{message}</p>}
-      <table>
+    <div className="manage-reviews-page admin-table-page">
+      <div className="page-heading"><span className="section-kicker">Community feedback</span><h1>Review moderation</h1><p>Read learner feedback in context and remove reviews when moderation is needed.</p></div>
+      {error && <p className="error" role="alert">{error}</p>}
+      {message && <p className="success" role="status">{message}</p>}
+      {reviews.length === 0 ? <div className="empty-state"><h2>No reviews to moderate</h2><p>Learner feedback will appear here.</p></div> : <div className="table-scroll"><table>
         <thead>
           <tr>
             <th>Rating</th>
@@ -50,15 +50,15 @@ function ManageReviews() {
         <tbody>
           {reviews.map((review) => (
             <tr key={review._id}>
-              <td>{review.rating}</td>
+              <td><span className="review-rating">★ {review.rating} / 5</span></td>
               <td>{review.patience}</td>
               <td>{review.raiseVoice ? "Yes" : "No"}</td>
               <td>{review.comment}</td>
-              <td><button onClick={() => handleDelete(review._id)}>Delete</button></td>
+              <td><button className="button-danger" onClick={() => { if (window.confirm("Delete this review? This cannot be undone.")) handleDelete(review._id); }}>Delete</button></td>
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>}
     </div>
   );
 }

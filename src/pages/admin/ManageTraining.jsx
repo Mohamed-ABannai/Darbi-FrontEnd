@@ -7,28 +7,28 @@ function ManageTraining() {
   const [lessons, setLessons] = useState([]);
   const [error, setError] = useState("");
 
-  async function getData() {
+  async function loadTrainingData() {
     try {
-      const plansResponse = await getTrainingPlans();
-      const lessonsResponse = await getLessons();
-      setTrainingPlans(plansResponse);
-      setLessons(lessonsResponse);
-    } catch (err) {
+      const plans = await getTrainingPlans();
+      const lessonData = await getLessons();
+      setTrainingPlans(plans);
+      setLessons(lessonData);
+    } catch {
       setError("Failed to load training data");
     }
   }
 
   useEffect(() => {
-    getData();
+    const timer = window.setTimeout(loadTrainingData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   return (
-    <div>
-      <h1>Manage Training</h1>
-      <p>Monitor training plans, lessons, and learner progress.</p>
-      {error && <p>{error}</p>}
+    <div className="manage-training-page admin-table-page">
+      <div className="page-heading"><span className="section-kicker">Training operations</span><h1>Manage training</h1><p>Monitor learner plans, scheduled lessons, and completed training hours.</p></div>
+      {error && <p className="error" role="alert">{error}</p>}
       <h2>Training Plans</h2>
-      <table>
+      <div className="table-scroll"><table>
         <thead>
           <tr>
             <th>Learner</th>
@@ -41,13 +41,13 @@ function ManageTraining() {
             <tr key={plan._id}>
               <td>{plan.learner?.username}</td>
               <td>{plan.instructor?.username}</td>
-              <td>{plan.status}</td>
+              <td><span className={`status-chip status-${plan.status}`}>{plan.status}</span></td>
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
       <h2>Lessons</h2>
-      <table>
+      <div className="table-scroll"><table>
         <thead>
           <tr>
             <th>Training Plan</th>
@@ -59,21 +59,24 @@ function ManageTraining() {
         <tbody>
           {lessons.map((lesson) => (
             <tr key={lesson._id}>
-              <td>{lesson.TrainingPlan}</td>
+              <td>{lesson.TrainingPlan?.learner?.username || lesson.TrainingPlan?.instructor?.username || (typeof lesson.TrainingPlan === "string" ? lesson.TrainingPlan : "Training plan")}</td>
               <td>{new Date(lesson.date).toLocaleDateString()}</td>
               <td>{lesson.hours}</td>
-              <td>{lesson.status}</td>
+              <td><span className={`status-chip status-${lesson.status}`}>{lesson.status}</span></td>
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
       <h2>Learner Progress</h2>
-      {trainingPlans.map((plan) => (
-        <div key={plan._id}>
-          <p>{plan.learner?.username} - {plan.instructor?.username}</p>
-          <p>Completed Lessons: {lessons.filter((lesson) => lesson.TrainingPlan === plan._id && lesson.status === "completed").length}</p>
+      <div className="progress-roster">{trainingPlans.map((plan) => {
+        const planLessons = lessons.filter((lesson) => String(lesson.TrainingPlan?._id || lesson.TrainingPlan) === String(plan._id) && lesson.status === "completed");
+        const hours = planLessons.reduce((total, lesson) => total + Number(lesson.hours || 0), 0);
+        return <div className="progress-roster-row" key={plan._id}>
+          <div><strong>{plan.learner?.username || "Learner"}</strong><span>{plan.instructor?.username || "Instructor"}</span></div>
+          <div><span>{hours} / 22 hours</span><div className="progress-track"><span style={{width:`${Math.min(100,Math.max(0,hours/22*100))}%`}} /></div></div>
+          <span>{planLessons.length} completed lessons</span>
         </div>
-      ))}
+      })}</div>
     </div>
   );
 }

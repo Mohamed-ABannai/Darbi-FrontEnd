@@ -10,6 +10,26 @@ export async function getUsers() {
   return response.data;
 }
 
+export async function getExaminers() {
+  const response = await api.get("/users/examiners");
+  return response.data;
+}
+
+export async function createExaminer(examinerData) {
+  const response = await api.post("/users/examiners", examinerData);
+  return response.data;
+}
+
+export async function getExaminerById(id) {
+  const response = await api.get(`/users/examiners/${id}`);
+  return response.data;
+}
+
+export async function updateExaminerStatus(id, isActive) {
+  const response = await api.patch(`/users/examiners/${id}/status`, { isActive });
+  return response.data;
+}
+
 export async function getUserById(id) {
   const response = await api.get(`/users/${id}`);
   return response.data;

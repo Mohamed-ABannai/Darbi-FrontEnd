@@ -16,13 +16,14 @@ function TrainingRequests() {
     try {
       const response = await getTrainingPlans();
       setPlans(response);
-    } catch (err) {
+    } catch {
       setError("Failed to load training requests");
     }
   }
 
   useEffect(() => {
-    getData();
+    const timer = window.setTimeout(getData, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   async function handleAccept(id) {
@@ -63,20 +64,20 @@ function TrainingRequests() {
   const pendingPlans = plans.filter((plan) => plan.status === "pending");
 
   return (
-    <div>
-      <h1>Training Requests</h1>
-      <p>View and respond to learner training requests.</p>
+    <div className="instructor-requests-page">
+      <div className="page-heading"><span className="section-kicker">Learner enquiries</span><h1>Training requests</h1><p>Review learner requests and decide whether to work with them. Arrange lessons separately after accepting.</p></div>
 
-      {error && <p>{error}</p>}
-      {message && <p>{message}</p>}
+      {error && <p className="error" role="alert">{error}</p>}
+      {message && <p className="success" role="status">{message}</p>}
 
       {pendingPlans.length === 0 ? (
-        <p>No pending training requests.</p>
+        <div className="empty-state"><h2>All caught up</h2><p>New training requests will appear here.</p></div>
       ) : (
         <table>
           <thead>
             <tr>
               <th>Learner</th>
+              <th>Request</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -84,8 +85,9 @@ function TrainingRequests() {
           <tbody>
             {pendingPlans.map((plan) => (
               <tr key={plan._id}>
-                <td>{plan.learner?.username || "Learner"}</td>
-                <td>{plan.status}</td>
+                <td><strong>{plan.learner?.username || "Learner"}</strong></td>
+                <td>Learner wants to work with you.</td>
+                <td><span className={`status-chip status-${plan.status}`}>{plan.status}</span></td>
                 <td>
                   <button onClick={() => handleAccept(plan._id)}>
                     Accept
@@ -100,6 +102,7 @@ function TrainingRequests() {
                         id={`reason-${plan._id}`}
                         type="text"
                         minLength={20}
+                        maxLength={140}
                         value={reason}
                         onChange={(event) => setReason(event.target.value)}
                       />

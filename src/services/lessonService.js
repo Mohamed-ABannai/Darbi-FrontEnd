@@ -5,11 +5,6 @@ export async function getLessons() {
   return response.data;
 }
 
-export async function getLessonById(id) {
-  const response = await api.get(`/lessons/${id}`);
-  return response.data;
-}
-
 export async function createLesson(lessonData) {
   const response = await api.post("/lessons", lessonData);
   return response.data;
@@ -32,10 +27,5 @@ export async function cancelLesson(id, cancellationReason) {
     status: "cancelled",
     cancellationReason
   });
-  return response.data;
-}
-
-export async function deleteLesson(id) {
-  const response = await api.delete(`/lessons/${id}`);
   return response.data;
 }

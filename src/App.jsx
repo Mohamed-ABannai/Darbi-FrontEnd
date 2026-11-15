@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { Navigate, Route, Routes } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, Navigate, Route, Routes } from "react-router";
 import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
 import SignupPage from "./pages/SignupPage";
 import Homepage from "./pages/Homepage";
 import SignInPage from "./pages/SigninPage";
@@ -20,6 +21,7 @@ import ManageTraining from "./pages/admin/ManageTraining";
 import ManageReviews from "./pages/admin/ManageReviews";
 import ManageDrivingTests from "./pages/admin/ManageDrivingTests";
 import ManageAdmins from "./pages/admin/ManageAdmins";
+import ManageExaminers from "./pages/admin/ManageExaminers";
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 import TrainingRequests from "./pages/instructor/TrainingRequests";
 import MyLearners from "./pages/instructor/MyLearners";
@@ -28,22 +30,46 @@ import InstructorPayments from "./pages/instructor/InstructorPayments";
 import ExaminerDashboard from "./pages/examiner/ExaminerDashboard";
 import AssignedTests from "./pages/examiner/AssignedTests";
 import Profile from "./pages/shared/Profile";
+import "./App.css";
 
-function App() {
-  function getUserFromToken() {
-    const token = localStorage.getItem("token");
+function getUserFromToken() {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
 
-    if (!token) return null;
-
-    try {
-      return JSON.parse(atob(token.split(".")[1]));
-    } catch {
+  try {
+    const tokenPayload = token.split(".")[1];
+    const base64 = tokenPayload.replace(/-/g, "+").replace(/_/g, "/");
+    const payload = JSON.parse(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, "=")));
+    if (payload.exp && payload.exp * 1000 <= Date.now()) {
       localStorage.removeItem("token");
       return null;
     }
+    return payload;
+  } catch {
+    localStorage.removeItem("token");
+    return null;
   }
+}
 
+function App() {
   const [user, setUser] = useState(getUserFromToken());
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    function handleExpiredSession() {
+      setUser(null);
+      setSidebarOpen(false);
+    }
+    function handleStorageChange(event) {
+      if (event.key === "token") setUser(getUserFromToken());
+    }
+    window.addEventListener("darbi:auth-expired", handleExpiredSession);
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("darbi:auth-expired", handleExpiredSession);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   function handleLogout() {
     logout();
@@ -51,11 +77,21 @@ function App() {
   }
 
   return (
-    <div>
-      <Navbar user={user} handleLogout={handleLogout} />
-
-      <Routes>
-        <Route path="/" element={<Homepage />} />
+    <div className={user ? "app-layout" : "public-layout"}>
+      {user ? (
+        <>
+          <Sidebar user={user} handleLogout={handleLogout} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          <div className="app-main">
+            <header className="mobile-header">
+              <button className="mobile-menu-button" type="button" aria-label="Open navigation menu" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(true)}>
+                <span /><span /><span />
+              </button>
+              <Link className="mobile-brand" to="/dashboard" aria-label="DARBI dashboard">DARBI</Link>
+              <span className="mobile-role">{user.role}</span>
+            </header>
+            <main className="app-content">
+              <Routes>
+        <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Homepage />} />
 
         <Route path="/sign-up" element={<SignupPage />} />
 
@@ -285,6 +321,17 @@ function App() {
         />
 
         <Route
+          path="/admin/examiners"
+          element={
+            user?.role === "admin" || user?.role === "superAdmin" ? (
+              <ManageExaminers />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
+          }
+        />
+
+        <Route
           path="/profile"
           element={
             user ? (
@@ -299,7 +346,23 @@ function App() {
           path="*"
           element={<Navigate to="/" />}
         />
-      </Routes>
+              </Routes>
+            </main>
+          </div>
+        </>
+      ) : (
+        <>
+          <Navbar />
+          <main className="public-content">
+            <Routes>
+              <Route path="/" element={<Homepage />} />
+              <Route path="/sign-up" element={<SignupPage />} />
+              <Route path="/sign-in" element={<SignInPage setUser={setUser} />} />
+              <Route path="*" element={<Navigate to="/sign-in" replace />} />
+            </Routes>
+          </main>
+        </>
+      )}
     </div>
   );
 }
