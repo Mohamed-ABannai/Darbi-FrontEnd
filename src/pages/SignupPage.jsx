@@ -75,53 +75,53 @@ function SignUp() {
 
   return (
     <main className="auth-page">
-      <aside className="auth-aside"><div><span className="hero-eyebrow">A confident start</span><h1>Learn at<br/>your own pace.</h1><p>Build your driving journey with organized lessons, a clear training plan, and an instructor who fits your needs.</p></div><small>DARBI · Your road, your progress.</small></aside>
+      <aside className="auth-aside"><div><span className="hero-eyebrow">A confident start</span><h1>Learn at<br />your own pace.</h1><p>Build your driving journey with organized lessons, a clear training plan, and an instructor who fits your needs.</p></div><small>DARBI · Your road, your progress.</small></aside>
       <section className="auth-panel">
-      <h1>Create your account</h1>
-      <p>Choose how you want to join DARBI.</p>
-      <div className="role-picker">
-        <button type="button" onClick={() => setRole("learner")} disabled={role === "learner"}>Learner</button>
-        <button type="button" onClick={() => setRole("instructor")} disabled={role === "instructor"}>Instructor</button>
-      </div>
-      <h2>{role === "learner" ? "Learner Registration" : "Instructor Registration"}</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="username">Username</label>
-          <input id="username" type="text" name="username" value={formData.username} onChange={handleChange} minLength={3} maxLength={30} required />
+        <h1>Create your account</h1>
+        <p>Choose how you want to join DARBI.</p>
+        <div className="role-picker">
+          <button type="button" onClick={() => setRole("learner")} disabled={role === "learner"}>Learner</button>
+          <button type="button" onClick={() => setRole("instructor")} disabled={role === "instructor"}>Instructor</button>
         </div>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input id="email" type="email" name="email" value={formData.email} onChange={handleChange} required />
-        </div>
-        <div>
-          <label htmlFor="phone">Phone Number</label>
-          <input id="phone" type="tel" name="phone" value={formData.phone} onChange={handleChange} required />
-        </div>
-        <div>
-          <label htmlFor="dateOfBirth">Date of Birth</label>
-          <input id="dateOfBirth" type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <div className="password-field"><input id="password" type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} minLength={6} required /><button className="password-toggle" type="button" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword((visible) => !visible)}>{showPassword ? "Hide" : "Show"}</button></div>
-        </div>
-        {role === "instructor" && (
-          <>
-            <div>
-              <label htmlFor="hourlyRate">Hourly Rate (BHD)</label>
-              <input id="hourlyRate" type="number" name="hourlyRate" min="22" step="0.001" value={formData.hourlyRate} onChange={handleChange} required />
-            </div>
-            <div>
-              <label htmlFor="documents">Verification Document</label>
-              <input id="documents" type="file" name="documents" accept=".pdf,.jpg,.jpeg,.png" onChange={handleDocumentChange} required />
-              <p>PDF, JPG, or PNG (maximum 5 MB).</p>
-            </div>
-          </>
-        )}
-        {error && <p className="error" role="alert">{error}</p>}
-        <button type="submit" disabled={submitting}>{submitting ? "Creating account…" : "Create Account"}</button>
-      </form>
-      <p>Already have an account? <Link to="/sign-in">Sign In</Link></p>
+        <h2>{role === "learner" ? "Learner Registration" : "Instructor Registration"}</h2>
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="username">Username</label>
+            <input id="username" type="text" name="username" value={formData.username} onChange={handleChange} minLength={3} maxLength={30} required />
+          </div>
+          <div>
+            <label htmlFor="email">Email</label>
+            <input id="email" type="email" name="email" value={formData.email} onChange={handleChange} required />
+          </div>
+          <div>
+            <label htmlFor="phone">Phone Number</label>
+            <input id="phone" type="tel" name="phone" value={formData.phone} onChange={handleChange} required />
+          </div>
+          <div>
+            <label htmlFor="dateOfBirth">Date of Birth</label>
+            <input id="dateOfBirth" type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required />
+          </div>
+          <div>
+            <label htmlFor="password">Password</label>
+            <div className="password-field"><input id="password" type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} minLength={6} required /><button className="password-toggle" type="button" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword((visible) => !visible)}>{showPassword ? "Hide" : "Show"}</button></div>
+          </div>
+          {role === "instructor" && (
+            <>
+              <div>
+                <label htmlFor="hourlyRate">Hourly Rate (BHD)</label>
+                <input id="hourlyRate" type="number" name="hourlyRate" min="22" step="0.001" value={formData.hourlyRate} onChange={handleChange} required />
+              </div>
+              <div>
+                <label htmlFor="documents">Verification Document</label>
+                <input id="documents" type="file" name="documents" accept=".pdf,.jpg,.jpeg,.png" onChange={handleDocumentChange} required />
+                <p>PDF, JPG, or PNG (maximum 5 MB).</p>
+              </div>
+            </>
+          )}
+          {error && <p className="error" role="alert">{error}</p>}
+          <button type="submit" disabled={submitting}>{submitting ? "Creating account…" : "Create Account"}</button>
+        </form>
+        <p>Already have an account? <Link to="/sign-in">Sign In</Link></p>
       </section>
     </main>
   );

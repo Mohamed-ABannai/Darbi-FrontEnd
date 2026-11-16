@@ -14,11 +14,11 @@ function SignInPage({ setUser }) {
     password: '',
   });
 
-  function handleChange(event){
+  function handleChange(event) {
     setFormData({ ...formData, [event.target.name]: event.target.value });
   }
 
-  async function handleSubmit(event){
+  async function handleSubmit(event) {
     event.preventDefault();
     setError('');
     setSubmitting(true);
@@ -36,42 +36,42 @@ function SignInPage({ setUser }) {
 
   return (
     <main className="auth-page">
-      <aside className="auth-aside"><div><span className="hero-eyebrow">Welcome back</span><h1>Your road<br/>continues here.</h1><p>Pick up where you left off. Your lessons, plans, and next steps are ready when you are.</p></div><small>DARBI · Driving forward, together.</small></aside>
+      <aside className="auth-aside"><div><span className="hero-eyebrow">Welcome back</span><h1>Your road<br />continues here.</h1><p>Pick up where you left off. Your lessons, plans, and next steps are ready when you are.</p></div><small>DARBI · Driving forward, together.</small></aside>
       <section className="auth-panel">
-      <h1>Sign in to DARBI</h1>
-      <p>Enter your account details to continue.</p>
-      {error && <p className="error" role="alert">{error}</p>}
-      <form autoComplete='off' onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor='username'>Username:</label>
-          <input
-            type='text'
-            autoComplete='off'
-            id='username'
-            value={formData.username}
-            name='username'
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor='password'>Password:</label>
-          <div className="password-field"><input
-            type={showPassword ? 'text' : 'password'}
-            autoComplete='off'
-            id='password'
-            value={formData.password}
-            name='password'
-            onChange={handleChange}
-            required
-          /><button className="password-toggle" type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} onClick={() => setShowPassword((visible) => !visible)}>{showPassword ? 'Hide' : 'Show'}</button></div>
-        </div>
-        <div>
-          <button type='submit' disabled={submitting}>{submitting ? 'Signing in…' : 'Sign In'}</button>
-          <button type='button' onClick={() => navigate('/')}>Back to home</button>
-        </div>
-      </form>
-      <p>New to DARBI? <Link to="/sign-up">Create an account</Link></p>
+        <h1>Sign in to DARBI</h1>
+        <p>Enter your account details to continue.</p>
+        {error && <p className="error" role="alert">{error}</p>}
+        <form autoComplete='off' onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor='username'>Username:</label>
+            <input
+              type='text'
+              autoComplete='off'
+              id='username'
+              value={formData.username}
+              name='username'
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor='password'>Password:</label>
+            <div className="password-field"><input
+              type={showPassword ? 'text' : 'password'}
+              autoComplete='off'
+              id='password'
+              value={formData.password}
+              name='password'
+              onChange={handleChange}
+              required
+            /><button className="password-toggle" type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} onClick={() => setShowPassword((visible) => !visible)}>{showPassword ? 'Hide' : 'Show'}</button></div>
+          </div>
+          <div>
+            <button type='submit' disabled={submitting}>{submitting ? 'Signing in…' : 'Sign In'}</button>
+            <button type='button' onClick={() => navigate('/')}>Back to home</button>
+          </div>
+        </form>
+        <p>New to DARBI? <Link to="/sign-up">Create an account</Link></p>
       </section>
     </main>
   );

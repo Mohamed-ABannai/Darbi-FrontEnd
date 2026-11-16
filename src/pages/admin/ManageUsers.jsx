@@ -42,32 +42,32 @@ function ManageUsers() {
       {error && <p className="error" role="alert">{error}</p>}
       <div className="table-toolbar"><label className="sr-only" htmlFor="user-search">Search users</label><input id="user-search" type="search" placeholder="Search name, email, or phone" value={search} onChange={(event) => setSearch(event.target.value)} /><label className="sr-only" htmlFor="role-filter">Filter by role</label><select id="role-filter" value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)}><option value="all">All roles</option>{[...new Set(users.map((user) => user.role))].map((role) => <option key={role} value={role}>{role}</option>)}</select><span className="result-count">{visibleUsers.length} accounts</span></div>
       <div className="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {visibleUsers.map((user) => (
-            <tr key={user._id}>
-              <td>{user.username}</td>
-              <td>{user.email}</td>
-              <td><span className="role-pill">{user.role}</span></td>
-              <td><span className={`status-chip ${user.isActive ? "status-active" : "status-inactive"}`}>{user.isActive ? "Active" : "Inactive"}</span></td>
-              <td>
-                <button onClick={() => handleStatus(user)}>
-                  {user.isActive ? "Deactivate" : "Activate"}
-                </button>
-              </td>
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {visibleUsers.map((user) => (
+              <tr key={user._id}>
+                <td>{user.username}</td>
+                <td>{user.email}</td>
+                <td><span className="role-pill">{user.role}</span></td>
+                <td><span className={`status-chip ${user.isActive ? "status-active" : "status-inactive"}`}>{user.isActive ? "Active" : "Inactive"}</span></td>
+                <td>
+                  <button onClick={() => handleStatus(user)}>
+                    {user.isActive ? "Deactivate" : "Activate"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

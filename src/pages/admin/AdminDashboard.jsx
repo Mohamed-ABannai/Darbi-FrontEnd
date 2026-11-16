@@ -48,8 +48,8 @@ function AdminDashboard({ user }) {
       <div className="quick-links-grid admin-quick-links">
         <Link to="/admin/users">Manage users <span>→</span></Link>
         {user?.role === "superAdmin" && (
-        <Link to="/admin/manage-admins">Manage admins <span>→</span></Link>
-         )}
+          <Link to="/admin/manage-admins">Manage admins <span>→</span></Link>
+        )}
         <Link to="/admin/instructor-approvals">Instructor approvals <span>→</span></Link>
         <Link to="/admin/training">Manage training <span>→</span></Link>
         <Link to="/admin/driving-tests">Driving tests <span>→</span></Link>

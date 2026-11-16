@@ -73,7 +73,7 @@ function ManageTraining() {
         const hours = planLessons.reduce((total, lesson) => total + Number(lesson.hours || 0), 0);
         return <div className="progress-roster-row" key={plan._id}>
           <div><strong>{plan.learner?.username || "Learner"}</strong><span>{plan.instructor?.username || "Instructor"}</span></div>
-          <div><span>{hours} / 22 hours</span><div className="progress-track"><span style={{width:`${Math.min(100,Math.max(0,hours/22*100))}%`}} /></div></div>
+          <div><span>{hours} / 22 hours</span><div className="progress-track"><span style={{ width: `${Math.min(100, Math.max(0, hours / 22 * 100))}%` }} /></div></div>
           <span>{planLessons.length} completed lessons</span>
         </div>
       })}</div>

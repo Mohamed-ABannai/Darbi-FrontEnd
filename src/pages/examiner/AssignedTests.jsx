@@ -40,7 +40,7 @@ function AssignedTests() {
       {tests.length === 0 ? (
         <div className="empty-state"><h2>No tests assigned</h2><p>New examiner assignments will show here.</p></div>
       ) : (
-      <div className="table-scroll"><table>
+        <div className="table-scroll"><table>
           <thead>
             <tr>
               <th>Learner</th>
@@ -70,7 +70,7 @@ function AssignedTests() {
               </tr>
             ))}
           </tbody>
-      </table></div>
+        </table></div>
       )}
     </div>
   );

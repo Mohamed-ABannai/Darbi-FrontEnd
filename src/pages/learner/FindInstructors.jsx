@@ -35,7 +35,7 @@ function FindInstructors() {
       <div className="directory-toolbar"><label className="sr-only" htmlFor="instructor-search">Search instructors</label><input id="instructor-search" type="search" placeholder="Search by instructor name" value={search} onChange={(event) => setSearch(event.target.value)} /></div>
 
       {error && <p className="error" role="alert">{error}</p>}
-      {loading && <div className="empty-state"><span className="loading-mark"/><p>Finding instructors…</p></div>}
+      {loading && <div className="empty-state"><span className="loading-mark" /><p>Finding instructors…</p></div>}
 
       {!loading && visibleInstructors.length === 0 && <div className="empty-state"><h2>{search ? "No instructors match that search" : "No instructors available yet"}</h2><p>{search ? "Try another name." : "Check back soon for instructor profiles."}</p></div>}
       {!loading && visibleInstructors.length > 0 && <div className="instructors-list">

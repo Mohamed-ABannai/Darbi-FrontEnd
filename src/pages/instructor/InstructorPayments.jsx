@@ -40,7 +40,7 @@ function InstructorPayments() {
       {payments.length === 0 ? (
         <div className="empty-state"><h2>No payments yet</h2><p>Learner payment submissions will appear here when ready for review.</p></div>
       ) : (
-      <div className="table-scroll"><table>
+        <div className="table-scroll"><table>
           <thead>
             <tr>
               <th>Learner / lesson</th>
@@ -53,10 +53,10 @@ function InstructorPayments() {
           <tbody>
             {payments.map((payment) => (
               <tr key={payment._id}>
-              <td><strong>{payment.lesson?.TrainingPlan?.learner?.username || "Learner"}</strong>{payment.lesson?.date && <small className="table-secondary">{new Date(payment.lesson.date).toLocaleDateString()} · {Number(payment.lesson.hours || 0)} hours</small>}</td>
-              <td><strong>{Number(payment.amount || 0).toFixed(3)} BHD</strong><small className="table-secondary">{Number(payment.lesson?.hourlyRateSnapshot || (payment.amount / (payment.lesson?.hours || 1))).toFixed(3)} BHD/hour</small></td>
-              <td>{payment.method}</td>
-              <td><span className={`status-chip status-${payment.status}`}>{payment.status}</span></td>
+                <td><strong>{payment.lesson?.TrainingPlan?.learner?.username || "Learner"}</strong>{payment.lesson?.date && <small className="table-secondary">{new Date(payment.lesson.date).toLocaleDateString()} · {Number(payment.lesson.hours || 0)} hours</small>}</td>
+                <td><strong>{Number(payment.amount || 0).toFixed(3)} BHD</strong><small className="table-secondary">{Number(payment.lesson?.hourlyRateSnapshot || (payment.amount / (payment.lesson?.hours || 1))).toFixed(3)} BHD/hour</small></td>
+                <td>{payment.method}</td>
+                <td><span className={`status-chip status-${payment.status}`}>{payment.status}</span></td>
                 <td>
                   {payment.status === "pending" && (
                     <div>
@@ -68,7 +68,7 @@ function InstructorPayments() {
               </tr>
             ))}
           </tbody>
-      </table></div>
+        </table></div>
       )}
     </div>
   );

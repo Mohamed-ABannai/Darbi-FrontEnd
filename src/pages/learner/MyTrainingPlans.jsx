@@ -125,55 +125,55 @@ function MyTrainingPlans() {
 
             return (
               <div key={plan._id} className="training-plan-card">
-              <div className="record-heading"><div className="identity-inline">{instructorPhotos[plan._id] ? <img className="sidebar-avatar-image" src={instructorPhotos[plan._id]} alt="" /> : <span className="profile-initial" aria-hidden="true">{(plan.instructor?.username || "I").charAt(0).toUpperCase()}</span>}<div><span className="section-kicker">Training plan</span><h2>{plan.instructor?.username || "Instructor to be assigned"}</h2></div></div><span className={`status-chip status-${plan.status}`}>{plan.status}</span></div>
+                <div className="record-heading"><div className="identity-inline">{instructorPhotos[plan._id] ? <img className="sidebar-avatar-image" src={instructorPhotos[plan._id]} alt="" /> : <span className="profile-initial" aria-hidden="true">{(plan.instructor?.username || "I").charAt(0).toUpperCase()}</span>}<div><span className="section-kicker">Training plan</span><h2>{plan.instructor?.username || "Instructor to be assigned"}</h2></div></div><span className={`status-chip status-${plan.status}`}>{plan.status}</span></div>
 
-              <p>
-                <b>Instructor:</b>{" "}
-                {plan.instructor?.username || "Not assigned"}
-              </p>
-
-              <p>
-                <b>Hourly Rate:</b>{" "}
-                {(plan.hourlyRateSnapshot || plan.instructor?.hourlyRate) ? `${Number(plan.hourlyRateSnapshot || plan.instructor.hourlyRate).toFixed(3)} BHD` : "N/A"}
-              </p>
-
-              {plan.reason && (
                 <p>
-                  <b>Reason:</b> {plan.reason}
+                  <b>Instructor:</b>{" "}
+                  {plan.instructor?.username || "Not assigned"}
                 </p>
-              )}
 
-              <div className="plan-progress-summary"><div className="section-title-row"><strong>Training progress</strong><span>{completedHours} / 22 hours</span></div><div className="progress-track" role="progressbar" aria-label={`Training hours for ${plan.instructor?.username || "plan"}`} aria-valuenow={Math.min(22, completedHours)} aria-valuemin="0" aria-valuemax="22"><span style={{ width: `${Math.min(100, Math.max(0, completedHours / 22 * 100))}%` }} /></div><small>{Math.max(0, 22 - completedHours)} hours remaining · {completed.length} completed lessons · {Math.max(0, completedHours).toFixed(1)} total hours</small></div>
+                <p>
+                  <b>Hourly Rate:</b>{" "}
+                  {(plan.hourlyRateSnapshot || plan.instructor?.hourlyRate) ? `${Number(plan.hourlyRateSnapshot || plan.instructor.hourlyRate).toFixed(3)} BHD` : "N/A"}
+                </p>
 
-              <h3>Weekly Schedule</h3>
+                {plan.reason && (
+                  <p>
+                    <b>Reason:</b> {plan.reason}
+                  </p>
+                )}
 
-              {!plan.weeklySchedule || plan.weeklySchedule.length === 0 ? (
-                <p>No weekly schedule available.</p>
-              ) : (
-                <ul>
-                  {plan.weeklySchedule.map((day, index) => (
-                    <li key={index}>
-                      {day.day}: {day.startTime || day.start || "Time not set"} – {day.endTime || day.end || "Time not set"}
-                    </li>
-                  ))}
-                </ul>
-              )}
+                <div className="plan-progress-summary"><div className="section-title-row"><strong>Training progress</strong><span>{completedHours} / 22 hours</span></div><div className="progress-track" role="progressbar" aria-label={`Training hours for ${plan.instructor?.username || "plan"}`} aria-valuenow={Math.min(22, completedHours)} aria-valuemin="0" aria-valuemax="22"><span style={{ width: `${Math.min(100, Math.max(0, completedHours / 22 * 100))}%` }} /></div><small>{Math.max(0, 22 - completedHours)} hours remaining · {completed.length} completed lessons · {Math.max(0, completedHours).toFixed(1)} total hours</small></div>
 
-              <div className="plan-activity-summary"><p><b>Upcoming lesson:</b> {upcoming ? new Date(upcoming.date).toLocaleString("en-BH", { timeZone: "Asia/Bahrain" }) : "None scheduled"}</p><p><b>Payments:</b> {planPayments.length ? planPayments.map((payment) => `${Number(payment.amount || 0).toFixed(3)} BHD · ${payment.status}`).join("; ") : "No payments yet"}</p></div>
+                <h3>Weekly Schedule</h3>
 
-              <h3>Individual lessons</h3>
-              {planLessons.length ? <ul>{planLessons.slice().sort((a,b) => new Date(a.date)-new Date(b.date)).map((lesson) => <li key={lesson._id}>
-                {new Date(lesson.date).toLocaleString("en-BH", { timeZone: "Asia/Bahrain" })} · {lesson.hours} hours · <span className={`status-chip status-${lesson.status}`}>{lesson.status}</span>
-                {["pending", "scheduled"].includes(lesson.status) && plan.status === "active" && (cancellingLessonId === lesson._id ? <span>
-                  <input aria-label="Cancellation reason" maxLength={140} value={lessonReason} onChange={(event) => setLessonReason(event.target.value)} placeholder="Cancellation reason" />
-                  <button className="button-danger" onClick={() => handleCancelLesson(lesson._id)}>Confirm lesson cancellation</button>
-                  <button onClick={closeLessonCancellation}>Back</button>
-                </span> : <button onClick={() => beginLessonCancellation(lesson._id)}>Cancel lesson</button>)}
-                {lesson.cancellationReason && <small> · {lesson.cancellationReason}</small>}
-              </li>)}</ul> : <p>No lessons scheduled yet.</p>}
+                {!plan.weeklySchedule || plan.weeklySchedule.length === 0 ? (
+                  <p>No weekly schedule available.</p>
+                ) : (
+                  <ul>
+                    {plan.weeklySchedule.map((day, index) => (
+                      <li key={index}>
+                        {day.day}: {day.startTime || day.start || "Time not set"} – {day.endTime || day.end || "Time not set"}
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
-              {plan.status === "rejected" && <p>Find another approved instructor to submit a new training request.</p>}
-              {(plan.status === "active" || plan.status === "completed") && <div className="plan-actions"><Link to="/lessons">View lessons</Link><Link to="/payments">View payments</Link></div>}
+                <div className="plan-activity-summary"><p><b>Upcoming lesson:</b> {upcoming ? new Date(upcoming.date).toLocaleString("en-BH", { timeZone: "Asia/Bahrain" }) : "None scheduled"}</p><p><b>Payments:</b> {planPayments.length ? planPayments.map((payment) => `${Number(payment.amount || 0).toFixed(3)} BHD · ${payment.status}`).join("; ") : "No payments yet"}</p></div>
+
+                <h3>Individual lessons</h3>
+                {planLessons.length ? <ul>{planLessons.slice().sort((a, b) => new Date(a.date) - new Date(b.date)).map((lesson) => <li key={lesson._id}>
+                  {new Date(lesson.date).toLocaleString("en-BH", { timeZone: "Asia/Bahrain" })} · {lesson.hours} hours · <span className={`status-chip status-${lesson.status}`}>{lesson.status}</span>
+                  {["pending", "scheduled"].includes(lesson.status) && plan.status === "active" && (cancellingLessonId === lesson._id ? <span>
+                    <input aria-label="Cancellation reason" maxLength={140} value={lessonReason} onChange={(event) => setLessonReason(event.target.value)} placeholder="Cancellation reason" />
+                    <button className="button-danger" onClick={() => handleCancelLesson(lesson._id)}>Confirm lesson cancellation</button>
+                    <button onClick={closeLessonCancellation}>Back</button>
+                  </span> : <button onClick={() => beginLessonCancellation(lesson._id)}>Cancel lesson</button>)}
+                  {lesson.cancellationReason && <small> · {lesson.cancellationReason}</small>}
+                </li>)}</ul> : <p>No lessons scheduled yet.</p>}
+
+                {plan.status === "rejected" && <p>Find another approved instructor to submit a new training request.</p>}
+                {(plan.status === "active" || plan.status === "completed") && <div className="plan-actions"><Link to="/lessons">View lessons</Link><Link to="/payments">View payments</Link></div>}
 
               </div>
             );

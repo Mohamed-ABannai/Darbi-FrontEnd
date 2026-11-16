@@ -34,7 +34,7 @@ function ManageDrivingTests() {
   }, []);
 
   function handleChange(event) {
-    setFormData({...formData,[event.target.name]: event.target.value});
+    setFormData({ ...formData, [event.target.name]: event.target.value });
   }
 
   async function handleSubmit(event) {

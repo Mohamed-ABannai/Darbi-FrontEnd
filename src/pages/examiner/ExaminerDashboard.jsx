@@ -39,7 +39,7 @@ function ExaminerDashboard({ user }) {
       <div className="stats-grid"><div className="stat-card"><h3>Total assigned</h3><p className="stat-value">{tests.length}</p></div><div className="stat-card"><h3>Pending</h3><p className="stat-value">{pendingTests.length}</p></div><div className="stat-card"><h3>Scheduled</h3><p className="stat-value">{scheduledTests.length}</p></div><div className="stat-card"><h3>Completed</h3><p className="stat-value">{completedTests.length}</p></div><div className="stat-card"><h3>Passed</h3><p className="stat-value">{passedTests.length}</p></div><div className="stat-card"><h3>Failed</h3><p className="stat-value">{failedTests.length}</p></div></div>
       <h2>Assigned Driving Tests</h2>
       <p><Link to="/examiner/assigned-tests">Assigned Tests</Link></p>
-      
+
       {tests.length === 0 ? (
         <p>No assigned driving tests found.</p>
       ) : (

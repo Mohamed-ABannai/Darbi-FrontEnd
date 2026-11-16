@@ -39,14 +39,14 @@ function LearnerDashboard({ user }) {
     .filter((lesson) => lesson.status === "completed")
     .reduce((total, lesson) => total + Number(lesson.hours || 0), 0);
 
-  const upcomingLessons = lessons.filter((lesson) => lesson.status === "scheduled" && new Date(lesson.date) >= new Date()).sort((a,b) => new Date(a.date)-new Date(b.date));
+  const upcomingLessons = lessons.filter((lesson) => lesson.status === "scheduled" && new Date(lesson.date) >= new Date()).sort((a, b) => new Date(a.date) - new Date(b.date));
   const upcomingLessonsCount = upcomingLessons.length;
 
   const pendingPaymentsCount = payments.filter(
     (payment) => payment.status === "pending" || payment.status === "unsubmitted",
   ).length;
 
-  const latestTest = [...tests].sort((a,b) => new Date(b.date || 0)-new Date(a.date || 0))[0] || null;
+  const latestTest = [...tests].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))[0] || null;
 
   const activePlan = plans.find((p) => p.status === "active");
   if (loading) return <p>Loading dashboard…</p>;
@@ -63,7 +63,7 @@ function LearnerDashboard({ user }) {
         <div className="stat-card progress-stat">
           <h3>Training Hours</h3>
           <p className="stat-value">{completedHours} / 22 hrs</p>
-          <div className="progress-track" role="progressbar" aria-label="Training hours completed" aria-valuenow={Math.min(completedHours,22)} aria-valuemin="0" aria-valuemax="22"><span style={{width:`${Math.min(100,Math.max(0,completedHours/22*100))}%`}} /></div>
+          <div className="progress-track" role="progressbar" aria-label="Training hours completed" aria-valuenow={Math.min(completedHours, 22)} aria-valuemin="0" aria-valuemax="22"><span style={{ width: `${Math.min(100, Math.max(0, completedHours / 22 * 100))}%` }} /></div>
           <Link to="/lessons">View Lessons</Link>
         </div>
 
@@ -88,7 +88,7 @@ function LearnerDashboard({ user }) {
         </div>
       </div>
 
-      <section className="dashboard-section next-lesson-section"><div className="section-title-row"><div><span className="section-kicker">Coming up</span><h2>Next lesson</h2></div><Link to="/lessons">View schedule →</Link></div>{upcomingLessons[0] ? <div className="next-lesson-card"><span className="next-date">{new Date(upcomingLessons[0].date).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})}</span><div><h3>Driving lesson</h3><p>{new Date(upcomingLessons[0].date).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})} · {upcomingLessons[0].hours} hours</p></div><span className="status-chip status-scheduled">Scheduled</span></div> : <div className="empty-state compact-empty"><p>No upcoming lessons yet.</p><Link to={activePlan ? "/lessons" : "/find-instructors"}>{activePlan ? "View your lessons" : "Find an instructor"} →</Link></div>}</section>
+      <section className="dashboard-section next-lesson-section"><div className="section-title-row"><div><span className="section-kicker">Coming up</span><h2>Next lesson</h2></div><Link to="/lessons">View schedule →</Link></div>{upcomingLessons[0] ? <div className="next-lesson-card"><span className="next-date">{new Date(upcomingLessons[0].date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</span><div><h3>Driving lesson</h3><p>{new Date(upcomingLessons[0].date).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })} · {upcomingLessons[0].hours} hours</p></div><span className="status-chip status-scheduled">Scheduled</span></div> : <div className="empty-state compact-empty"><p>No upcoming lessons yet.</p><Link to={activePlan ? "/lessons" : "/find-instructors"}>{activePlan ? "View your lessons" : "Find an instructor"} →</Link></div>}</section>
 
       <div className="dashboard-overview-section">
         <h2>Active Training Plan</h2>

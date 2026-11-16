@@ -110,45 +110,45 @@ function Profile({ user }) {
       <div className="page-heading"><span className="section-kicker">Your account</span><h1>Profile & settings</h1><p>Keep your contact details up to date.</p></div>
       <section className="profile-overview"><div className="profile-avatar-wrap">{photoPreview ? <img className="profile-photo" src={photoPreview} alt={`${user.username} profile`} /> : <span className="profile-initial profile-initial-large">{(user.username || "D").charAt(0).toUpperCase()}</span>}</div><div><h2>{user.username}</h2><span className="role-pill">{user.role}</span></div></section>
       <section className="profile-edit"><h2>Personal details</h2>
-      {error && <p className="error" role="alert">{error}</p>}
-      {message && <p className="success" role="status">{message}</p>}
+        {error && <p className="error" role="alert">{error}</p>}
+        {message && <p className="success" role="status">{message}</p>}
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input id="email" type="email" name="email" value={formData.email} onChange={handleChange} />
-        </div>
-        <div>
-          <label htmlFor="phone">Phone Number</label>
-          <input id="phone" type="tel" name="phone" value={formData.phone} onChange={handleChange} />
-        </div>
-        <div>
-          <label htmlFor="dateOfBirth">Date of Birth</label>
-          <input id="dateOfBirth" type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} />
-        </div>
-        <div>
-          <label htmlFor="profileImage">Profile Image</label>
-          <input id="profileImage" type="file" name="profileImage" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoChange} />
-          <small className="field-hint">JPG, PNG, or WebP. Your new photo previews here before saving.</small>
-        </div>
-
-        {user.role === "instructor" && (
+        <form onSubmit={handleSubmit}>
           <div>
-            <h2>Instructor Information</h2>
-            <div>
-              <label htmlFor="hourlyRate">Hourly Rate (BHD)</label>
-              <input id="hourlyRate" type="number" name="hourlyRate" min="22" value={formData.hourlyRate} onChange={handleChange} />
-            </div>
-            <div>
-              <label htmlFor="availability">Availability Date</label>
-              <input id="availability" type="date" name="availability" value={formData.availability} onChange={handleChange} />
-            </div>
-            <p>Your verification document was submitted during registration.</p>
+            <label htmlFor="email">Email</label>
+            <input id="email" type="email" name="email" value={formData.email} onChange={handleChange} />
           </div>
-        )}
+          <div>
+            <label htmlFor="phone">Phone Number</label>
+            <input id="phone" type="tel" name="phone" value={formData.phone} onChange={handleChange} />
+          </div>
+          <div>
+            <label htmlFor="dateOfBirth">Date of Birth</label>
+            <input id="dateOfBirth" type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} />
+          </div>
+          <div>
+            <label htmlFor="profileImage">Profile Image</label>
+            <input id="profileImage" type="file" name="profileImage" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoChange} />
+            <small className="field-hint">JPG, PNG, or WebP. Your new photo previews here before saving.</small>
+          </div>
 
-        <button type="submit" disabled={saving}>{saving ? "Saving…" : "Save changes"}</button>
-      </form></section>
+          {user.role === "instructor" && (
+            <div>
+              <h2>Instructor Information</h2>
+              <div>
+                <label htmlFor="hourlyRate">Hourly Rate (BHD)</label>
+                <input id="hourlyRate" type="number" name="hourlyRate" min="22" value={formData.hourlyRate} onChange={handleChange} />
+              </div>
+              <div>
+                <label htmlFor="availability">Availability Date</label>
+                <input id="availability" type="date" name="availability" value={formData.availability} onChange={handleChange} />
+              </div>
+              <p>Your verification document was submitted during registration.</p>
+            </div>
+          )}
+
+          <button type="submit" disabled={saving}>{saving ? "Saving…" : "Save changes"}</button>
+        </form></section>
     </div>
   );
 }

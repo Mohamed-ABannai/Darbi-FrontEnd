@@ -177,7 +177,7 @@ function LearnerReviews() {
 
           <div>
             <span className="field-label" id="rating-label">Overall rating</span>
-            <div className="rating-picker" role="group" aria-labelledby="rating-label">{[1,2,3,4,5].map((score) => <button key={score} type="button" className={score <= Number(formData.rating) ? "is-selected" : ""} aria-label={`${score} star${score === 1 ? "" : "s"}`} aria-pressed={Number(formData.rating) === score} onClick={() => setFormData({...formData,rating:score})}>★</button>)}</div>
+            <div className="rating-picker" role="group" aria-labelledby="rating-label">{[1, 2, 3, 4, 5].map((score) => <button key={score} type="button" className={score <= Number(formData.rating) ? "is-selected" : ""} aria-label={`${score} star${score === 1 ? "" : "s"}`} aria-pressed={Number(formData.rating) === score} onClick={() => setFormData({ ...formData, rating: score })}>★</button>)}</div>
           </div>
 
           <div>

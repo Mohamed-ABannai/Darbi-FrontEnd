@@ -51,12 +51,12 @@ function InstructorDetails() {
         <div className="instructor-info profile-feature">
           <span className="profile-initial profile-initial-large" aria-hidden="true">{(instructor.username || "I").charAt(0).toUpperCase()}</span>
           <div><span className="section-kicker">Driving instructor</span><h1>{instructor.username}</h1>
-          <p className="rate-display">{instructor.hourlyRate ? <><strong>{Number(instructor.hourlyRate).toFixed(3)} BHD</strong> / hour</> : "Rate not provided"}</p>
-          {instructor.availability && (
-            <p>
-              Available from: {new Date(instructor.availability).toLocaleDateString()}
-            </p>
-          )}</div>
+            <p className="rate-display">{instructor.hourlyRate ? <><strong>{Number(instructor.hourlyRate).toFixed(3)} BHD</strong> / hour</> : "Rate not provided"}</p>
+            {instructor.availability && (
+              <p>
+                Available from: {new Date(instructor.availability).toLocaleDateString()}
+              </p>
+            )}</div>
         </div>
       )}
 
